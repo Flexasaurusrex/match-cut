@@ -50,7 +50,11 @@ const UI = (() => {
     $('starters').innerHTML = STARTERS.map((s,i) => `<button data-i="${i}">${esc(s)}</button>`).join('');
     $('starters').onclick = (e) => {
       const b = e.target.closest('button'); if (!b) return;
-      Demo.run(Number(b.dataset.i));
+      const i = Number(b.dataset.i);
+      // If a model is wired up, say it out loud. Otherwise run the scripted
+      // version so the page still demonstrates itself.
+      if (window.Chat && window.MODEL_READY) Chat.ask(STARTERS[i]);
+      else Demo.run(i);
     };
   }
 
@@ -104,6 +108,8 @@ const UI = (() => {
 
   function paintEdges(res) {
     const box = $('edges');
+    const wrap = $('connWrap');
+    if (wrap) wrap.hidden = !(res && res.connections && res.connections.length);
     if (!res || !res.connections || !res.connections.length) {
       box.innerHTML = '<div class="hint">No connections recorded for this video.</div>';
       $('edgeCount').textContent = '';
@@ -129,7 +135,9 @@ const UI = (() => {
 
   function paintCalls(calls) {
     $('callCount').textContent = calls.length ? `${calls.length} call${calls.length>1?'s':''}` : 'idle';
-    $('calls').innerHTML = calls.map(c => {
+    const box = $('calls');
+    if (!box) { flashTally(); return; }
+    box.innerHTML = calls.map(c => {
       const a = Object.keys(c.args||{}).length ? JSON.stringify(c.args) : '—';
       const r = c.result && c.result.error ? `error: ${c.result.error}`
         : c.result && c.result.results ? `${c.result.results.length} of ${c.result.total}`
@@ -180,7 +188,18 @@ const UI = (() => {
     n.textContent = 'That video will not play embedded. Try the next one.';
   }
 
-  return { onCorpusReady, paint, paintDetail, paintEdges, paintQueue, paintCalls, agentStatus, playerError };
+  function modelStatus(ready) {
+    const say = $('say'), send = $('send');
+    if (ready) {
+      $('callCount').textContent = 'ready';
+      return;
+    }
+    say.placeholder = 'Conversation is off. Press a starter line instead.';
+    say.disabled = true; send.disabled = true;
+    $('callCount').textContent = 'no model';
+  }
+
+  return { onCorpusReady, paint, paintDetail, paintEdges, paintQueue, paintCalls, agentStatus, playerError, modelStatus };
 })();
 
 window.UI = UI;

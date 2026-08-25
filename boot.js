@@ -107,6 +107,15 @@ window.Demo = Demo;
 /* ------------------------------------------------------------------ go --- */
 (async () => {
   await App.boot();
+  Chat.init();
+
+  // Is a model available? Decides whether starters talk or run scripted.
+  try {
+    const r = await fetch('/api/chat').then(r => r.json());
+    window.MODEL_READY = !!r.configured;
+  } catch (e) { window.MODEL_READY = false; }
+  UI.modelStatus(window.MODEL_READY);
+
   const ok = await registerTools();
   if (!ok) UI.agentStatus('off');
   await Demo.call('archive_stats', {});

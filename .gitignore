@@ -3,3 +3,5 @@ node_modules
 .vercel
 data/raw/
 data/cards.json
+.env.local
+.env*.local
