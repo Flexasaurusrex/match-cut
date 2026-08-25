@@ -1,0 +1,5 @@
+node_modules
+.DS_Store
+.vercel
+data/raw/
+data/cards.json

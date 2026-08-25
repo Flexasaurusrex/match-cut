@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Match Cut</title>
+<meta name="description" content="A film scholar's instrument for 7,139 annotated music videos. Search by visual grammar, follow 49,753 hand-authored connections, and watch alongside your agent.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="app">
+
+  <header class="bar">
+    <div class="mark"><b>Match</b><i>Cut</i></div>
+    <div class="counts">
+      <span><b id="cVideos">—</b> videos</span>
+      <span><b id="cEdges">49,753</b> connections</span>
+      <span><b>1966</b>–<b>2026</b></span>
+    </div>
+    <div class="tally" id="tally" data-state="off"><i></i><span id="tallyText">No agent</span></div>
+  </header>
+
+  <div class="main">
+
+    <div class="left">
+      <div class="stage" id="stage">
+        <div id="screen"></div>
+        <div class="empty" id="empty">
+          <h1>Every frame in here was <em>looked at</em> by someone who wrote down what they saw.</h1>
+          <div class="starters" id="starters"></div>
+          <p class="lab" style="max-width:44ch;line-height:1.7">Ask your agent, or press a line to run it here</p>
+        </div>
+      </div>
+
+      <div class="meta" id="meta" hidden>
+        <div class="row">
+          <h2 id="mTitle"></h2>
+        </div>
+        <div class="facts" id="mFacts"></div>
+        <div class="agent-note" id="mNote" hidden></div>
+
+        <div class="fp" id="fp"></div>
+      </div>
+
+      <div class="read" id="read">
+        <div class="hint" id="readHint">
+          Annotations load with the video. Cultural context, curatorial assessment,
+          the era it sits inside, and who directed it.
+        </div>
+      </div>
+    </div>
+
+    <aside class="right">
+      <section class="panel">
+        <header><b>Agent activity</b><i id="callCount">idle</i></header>
+        <div class="scroll calls" id="calls">
+          <div class="hint">Every tool the agent runs shows up here, with its arguments and what came back. Nothing happens off screen.</div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <header><b>Connections</b><i id="edgeCount"></i></header>
+        <div class="scroll" id="edges">
+          <div class="hint">Each connection was written by hand and carries the reason it exists. Play something to walk the graph.</div>
+        </div>
+      </section>
+    </aside>
+
+  </div>
+</div>
+
+<script src="https://www.youtube.com/iframe_api"></script>
+<script src="app.js"></script>
+<script src="ui.js"></script>
+<script src="tools.js"></script>
+<script src="boot.js"></script>
+</body>
+</html>
