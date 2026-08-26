@@ -39,22 +39,43 @@ const UI = (() => {
     renderStarters();
   }
 
+  // Cold openers assume nothing is on screen yet, so none of them say "this one".
   const STARTERS = [
     'Play something by Michel Gondry and tell me why it matters',
-    'Find a video that looks like this one but from a different era',
     'Something slow, warm and barely cut',
-    'Walk me three connections out from here',
+    'Find the strangest thing in here and explain it',
     'Build a set about surrealism in the 90s',
+    'What is the oldest video in this archive?',
   ];
+  // Follow-ups only appear once there is a video to refer to.
+  const FOLLOWUPS = [
+    ['Something that looks like this, from another era', 1],
+    ['Why does this one matter?', 2],
+    ['Follow a connection from here', 3],
+    ['Now show me its opposite', 1],
+  ];
+  const DEMO_FOR_STARTER = [0, 2, 1, 4, 0];   // scripted stand-in per cold opener
+
   function renderStarters() {
     $('starters').innerHTML = STARTERS.map((s,i) => `<button data-i="${i}">${esc(s)}</button>`).join('');
     $('starters').onclick = (e) => {
       const b = e.target.closest('button'); if (!b) return;
       const i = Number(b.dataset.i);
-      // If a model is wired up, say it out loud. Otherwise run the scripted
-      // version so the page still demonstrates itself.
       if (window.Chat && window.MODEL_READY) Chat.ask(STARTERS[i]);
-      else Demo.run(i);
+      else Demo.run(DEMO_FOR_STARTER[i]);
+    };
+  }
+
+  function renderFollowups() {
+    const box = $('followups');
+    if (!box) return;
+    box.innerHTML = FOLLOWUPS.map(([t], i) => `<button data-i="${i}">${esc(t)}</button>`).join('');
+    box.hidden = false;
+    box.onclick = (e) => {
+      const b = e.target.closest('button'); if (!b) return;
+      const [text, demoIdx] = FOLLOWUPS[Number(b.dataset.i)];
+      if (window.Chat && window.MODEL_READY) Chat.ask(text);
+      else Demo.run(demoIdx);
     };
   }
 
@@ -76,6 +97,7 @@ const UI = (() => {
     // Blank the previous annotation; the new one arrives async. This replaces
     // #readHint, so never reach for that element again after the first paint.
     $('read').innerHTML = '<div class="hint">Reading the annotation\u2026</div>';
+    renderFollowups();
   }
 
   function paintFP(c) {
