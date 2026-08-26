@@ -2,7 +2,7 @@
    Tools are declared by the page and executed IN the browser, because they change
    what the person is looking at. This function only decides what to call next. */
 
-const MODEL = process.env.MATCHCUT_MODEL || 'gpt-4o';
+const MODEL = (process.env.MATCHCUT_MODEL || 'gpt-4o').trim();
 
 const SYSTEM = `You explore a music video archive with someone who is watching the same screen as you.
 
@@ -19,7 +19,7 @@ How to work:
 - Keep replies short. The person is watching a video, not reading an essay. Two or three sentences unless asked for more.`;
 
 export default async function handler(req, res) {
-  const key = process.env.OPENAI_API_KEY;
+  const key = (process.env.OPENAI_API_KEY || '').trim();
 
   // The page asks on load whether a model is wired up, so it can route the
   // starter lines through the conversation instead of the scripted fallback.
