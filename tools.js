@@ -60,7 +60,10 @@ const TOOLS = [
   },
   {
     name: 'play',
-    description: 'Put a video on the screen the user is watching and start it. This changes what the person sees.',
+    description:
+      'Put a video on the screen the person is watching and start it. Call this whenever you ' +
+      'name a specific video, including when answering a factual question about one. If you ' +
+      'mention it, show it.',
     inputSchema: {
       type: 'object',
       properties: {

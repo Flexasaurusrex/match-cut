@@ -55,6 +55,7 @@ const Chat = (() => {
 
     const schemas = TOOLS.map(t => ({ name: t.name, description: t.description, inputSchema: t.inputSchema }));
     let spinner = thinking();
+    let played = false, lastResults = null;
 
     try {
       for (let hop = 0; hop < 6; hop++) {
@@ -85,6 +86,8 @@ const Chat = (() => {
           try { out = tool ? await tool.run(args) : { error: `no tool named ${c.function.name}` }; }
           catch (e) { out = { error: String(e.message || e) }; }
           const ms = Math.round(performance.now() - t0);
+          if (c.function.name === 'play' && out && out.playing) played = true;
+          if (out && out.results && out.results.length) lastResults = out.results;
           toolCall(c.function.name, args, out, ms);
           App.logCall(c.function.name, args, out, ms);
           history.push({ role: 'tool', tool_call_id: c.id, content: JSON.stringify(out).slice(0, 6000) });
@@ -93,6 +96,15 @@ const Chat = (() => {
       }
     } finally {
       const s = thread().querySelector('.dots'); if (s) s.closest('.turn').remove();
+      // Safety net for the one failure that breaks the premise: it found a video,
+      // told you about it, and left the screen empty. Only fires when nothing is
+      // playing at all, so it can never interrupt something you are watching.
+      if (!played && lastResults && !App.nowPlaying().playing) {
+        const pick = lastResults[0];
+        const out = await TOOLS.find(t => t.name === 'play').run({ id: pick.id, note: 'Putting it on screen.' });
+        toolCall('play', { id: pick.id }, out, 0);
+        App.logCall('play', { id: pick.id }, out, 0);
+      }
       busy = false; $('send').disabled = false; scroll();
     }
   }
