@@ -53,6 +53,18 @@ const App = (() => {
     return S.detail.get(id) || null;
   }
 
+  // Rank, then pick from the strong band rather than always the single head.
+  // Deterministic ranking made an archive of 7,139 feel like an archive of one:
+  // "slow, warm, barely cut" matched 480 videos and played the same one forever.
+  function sample(ranked, lim) {
+    const band = ranked.slice(0, Math.max(lim * 4, 24));
+    for (let i = band.length - 1; i > 0; i--) {
+      const j = (Math.random() * (i + 1)) | 0;
+      [band[i], band[j]] = [band[j], band[i]];
+    }
+    return band.slice(0, lim);
+  }
+
   /* ----------------------------------------------------------- search --- */
   function search(a = {}) {
     const lim = clamp(a.limit || 12, 1, 50);
@@ -83,7 +95,10 @@ const App = (() => {
     out.sort((x, y) => y.score - x.score || (y.c.y || 0) - (x.c.y || 0));
     out = out.filter(x => !S.dead.has(x.c.id));
     S.pool = out.slice(0, 60).map(x => x.c.id);
-    return { total: out.length, results: out.slice(0, lim).map(x => brief(x.c)) };
+    // An exact-looking lookup (one artist, one title) should not be shuffled.
+    const narrow = out.length <= lim;
+    const picked = narrow ? out.slice(0, lim) : sample(out, lim);
+    return { total: out.length, results: picked.map(x => brief(x.c)) };
   }
 
   /* ------------------------------------------------------ visual look --- */
@@ -118,10 +133,12 @@ const App = (() => {
     out.sort((x, y) => seed ? x.d - y.d : (Number(x.c.tier) - Number(y.c.tier)));
     out = out.filter(x => !S.dead.has(x.c.id));
     S.pool = out.slice(0, 60).map(x => x.c.id);
+    // With a seed, stay close on look but vary which of the near matches you get.
+    const picked = out.length <= lim ? out : sample(out, lim);
     return {
       matched_on: seed ? `look of "${seed.a} - ${seed.t}"` : Object.keys(want).join(', ') || 'any',
       total: out.length,
-      results: out.slice(0, lim).map(x => Object.assign(brief(x.c), { look: lookOf(x.c) })),
+      results: picked.map(x => Object.assign(brief(x.c), { look: lookOf(x.c) })),
     };
   }
   const lookOf = (c) => ({
