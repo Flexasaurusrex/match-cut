@@ -328,13 +328,17 @@ a{color:inherit}
 /* six channels sweeping to their real positions: the instrument waking up */
 .gate-meter{display:flex;justify-content:center;gap:5px;margin:30px 0 32px;height:26px}
 .gate-meter span{
-  width:2px;background:var(--paper);align-self:flex-end;height:4px;
-  animation:sweep .9s cubic-bezier(.2,.9,.3,1) forwards;opacity:.85;
+  width:2px;background:var(--paper);align-self:flex-end;height:4px;opacity:.85;
+  /* sweep up once as the instrument wakes, then keep moving until you enter */
+  animation:
+    sweep .9s cubic-bezier(.2,.9,.3,1) var(--in) forwards,
+    vibe var(--dur) ease-in-out var(--hold) infinite alternate;
 }
 .gate-meter span:nth-child(6n+1){background:var(--ch-r)}
 .gate-meter span:nth-child(6n+3){background:var(--ch-g)}
 .gate-meter span:nth-child(6n+5){background:var(--ch-b)}
 @keyframes sweep{to{height:var(--h)}}
+@keyframes vibe{from{height:var(--h)}to{height:var(--h2)}}
 
 .gate-enter{
   font-family:var(--mono);font-size:11px;letter-spacing:.28em;text-transform:uppercase;
@@ -405,3 +409,7 @@ a{color:inherit}
   text-transform:uppercase;color:var(--tally);border:1px solid rgba(255,176,0,.4);
   padding:2px 5px;border-radius:2px;margin-left:5px;
 }
+.sheet-card p a{color:var(--tally);text-decoration:none;border-bottom:1px solid rgba(255,176,0,.35)}
+.sheet-card p a:hover{border-bottom-color:var(--tally)}
+.sheet-card p a b{color:inherit;font-family:var(--sans);font-size:inherit;font-weight:600}
+.sheet-note{font-size:12.5px !important;color:var(--dimmer) !important;margin-top:-12px !important}

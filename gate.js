@@ -41,11 +41,19 @@ const Gate = (() => {
   function runMeter() {
     const m = $('gateMeter');
     if (!m) return;
-    // six channels x six readings, sweeping to real-looking positions
-    const heights = [7,18,11,26,9,15, 22,6,19,13,25,10, 8,24,12,20,7,17,
-                     14,9,23,11,26,8, 19,13,7,21,10,25, 12,26,9,16,22,6];
-    m.innerHTML = heights.map((h,i) =>
-      `<span style="--h:${h}px;animation-delay:${0.9 + i * 0.02}s"></span>`).join('');
+    // Six channels, six readings each. Each bar keeps its own rhythm so the row
+    // reads like a level meter rather than a sine wave.
+    const BARS = 36;
+    let html = '';
+    for (let i = 0; i < BARS; i++) {
+      const h  = 6 + Math.round(Math.random() * 20);           // resting height
+      const h2 = Math.max(4, Math.min(26, h + (Math.random() < 0.5 ? -1 : 1) * (4 + Math.random() * 11)));
+      const dur = (0.55 + Math.random() * 1.05).toFixed(2);     // its own tempo
+      const inD = (0.9 + i * 0.02).toFixed(2);                  // the wake-up sweep
+      const hold = (Number(inD) + 0.9 + Math.random() * 0.4).toFixed(2);
+      html += `<span style="--h:${h}px;--h2:${h2}px;--dur:${dur}s;--in:${inD}s;--hold:${hold}s"></span>`;
+    }
+    m.innerHTML = html;
   }
 
   function openSheet() { $('sheet').hidden = false; $('sheetX').focus(); }
