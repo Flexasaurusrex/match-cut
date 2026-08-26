@@ -9,6 +9,7 @@ const App = (() => {
     yt: null, ready: false, current: null,
     queue: [], qi: 0, setTitle: '',
     calls: [], pct: {}, seq: 0,
+    dead: new Set(), lastSkip: 0, pool: [],
   };
 
   const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
@@ -80,6 +81,8 @@ const App = (() => {
       out.push({ c, score });
     }
     out.sort((x, y) => y.score - x.score || (y.c.y || 0) - (x.c.y || 0));
+    out = out.filter(x => !S.dead.has(x.c.id));
+    S.pool = out.slice(0, 60).map(x => x.c.id);
     return { total: out.length, results: out.slice(0, lim).map(x => brief(x.c)) };
   }
 
@@ -113,6 +116,8 @@ const App = (() => {
       out.push({ c, d });
     }
     out.sort((x, y) => seed ? x.d - y.d : (Number(x.c.tier) - Number(y.c.tier)));
+    out = out.filter(x => !S.dead.has(x.c.id));
+    S.pool = out.slice(0, 60).map(x => x.c.id);
     return {
       matched_on: seed ? `look of "${seed.a} - ${seed.t}"` : Object.keys(want).join(', ') || 'any',
       total: out.length,
@@ -148,6 +153,11 @@ const App = (() => {
   function play(a = {}) {
     const c = S.byId.get(a.id);
     if (!c) return { error: `unknown id ${a.id}` };
+    if (S.dead.has(c.id)) {
+      const alt = pickAlternative();
+      if (alt) return play({ id: alt.id, note: a.note || '' });
+      return { error: 'that video is blocked from embedding and no alternative was found' };
+    }
     S.current = c;
     const token = ++S.seq;            // annotation fetches are async and can land late
     try { UI.paint(c, a.note || ''); }
@@ -214,9 +224,38 @@ const App = (() => {
       events: {
         onReady: () => { S.ready = true; },
         onStateChange: (e) => { if (e.data === YT.PlayerState.ENDED) next(); },
-        onError: () => UI.playerError(),
+        onError: () => skipDead(),
       },
     });
+  }
+
+  // Roughly 2.5% of the archive is embed-blocked by the rights holder. Do not
+  // strand the viewer on a dead frame: mark it, say so, and move on. Throttled,
+  // because an unguarded error handler that advances will burn the whole queue.
+  function skipDead() {
+    const cur = S.current;
+    if (cur) S.dead.add(cur.id);
+    const now = Date.now();
+    if (now - S.lastSkip < 1200) return;
+    S.lastSkip = now;
+    const next = pickAlternative();
+    if (!next) { UI.playerError(cur, null); return; }
+    UI.playerError(cur, next);
+    play({ id: next.id, note: `${cur ? cur.artist : 'That one'} is blocked from embedding. Playing the next match instead.` });
+  }
+
+  function pickAlternative() {
+    // prefer whatever the queue or the last result set was already offering
+    const from = [...S.queue.slice(S.qi + 1), ...S.pool];
+    for (const id of from) {
+      if (!S.dead.has(id) && S.byId.has(id)) return S.byId.get(id);
+    }
+    const cur = S.current;
+    if (cur) {
+      const near = findByLook({ like_id: cur.id, limit: 8 });
+      for (const r of (near.results || [])) if (!S.dead.has(r.id)) return S.byId.get(r.id);
+    }
+    return null;
   }
 
   function logCall(name, args, result, ms) {
@@ -225,7 +264,7 @@ const App = (() => {
     UI.paintCalls(S.calls);
   }
 
-  return { boot, bootPlayer, search, findByLook, connections, play, nowPlaying,
+  return { boot, bootPlayer, search, findByLook, connections, play, nowPlaying, skipDead,
            annotation, queueSet, stats, next, logCall,
            setAgentStatus: (...a) => UI.agentStatus(...a),
            _state: S };

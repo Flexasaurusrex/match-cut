@@ -183,9 +183,11 @@ const UI = (() => {
     }
   }
 
-  function playerError() {
+  function playerError(blocked, next) {
     const n = $('mNote'); n.hidden = false;
-    n.textContent = 'That video will not play embedded. Try the next one.';
+    n.textContent = next
+      ? `${blocked ? blocked.artist + ' \u2013 ' + blocked.title : 'That video'} is blocked from embedding by the rights holder. Moving to the next match.`
+      : 'That video is blocked from embedding and nothing nearby is playable.';
   }
 
   function modelStatus(ready) {
