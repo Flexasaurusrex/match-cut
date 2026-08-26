@@ -9,6 +9,71 @@
 </head>
 <body>
 
+<!-- The opening is itself a match cut: real frames from the archive, cut on a
+     hard rhythm, resolving into the wordmark. -->
+<div class="gate" id="gate">
+  <div class="gate-film" id="gateFilm"></div>
+  <div class="gate-scrim"></div>
+  <div class="gate-body">
+    <div class="gate-mark"><b>Match</b><i>Cut</i></div>
+    <p class="gate-line">
+      Seven thousand one hundred and thirty nine music videos, each one watched by a
+      person who wrote down what they saw.
+    </p>
+    <div class="gate-meter" id="gateMeter"></div>
+    <button class="gate-enter" id="enter">Enter</button>
+    <p class="gate-foot">1966&ndash;2026 &nbsp;&middot;&nbsp; 49,753 connections, every one with a reason</p>
+  </div>
+</div>
+
+<!-- Info, on first entry and from the nav afterwards -->
+<div class="sheet" id="sheet" hidden>
+  <div class="sheet-card" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <button class="sheet-x" id="sheetX" aria-label="Close">&times;</button>
+    <h2 id="sheetTitle">A place built for two kinds of visitor</h2>
+
+    <p class="sheet-lede">
+      Match Cut is an archive of 7,139 music videos that you and your agent are meant to
+      use at the same time, on the same screen.
+    </p>
+
+    <h3>Why it needs an agent</h3>
+    <p>
+      Every video here carries a measured visual fingerprint: motion, brightness, warmth,
+      saturation, contrast, average shot length. You could not put that behind a filter
+      panel anyone would use. Six continuous dimensions, plus a request like
+      <em>"something shot like this one but from a different decade"</em>, is not a
+      control. It is a sentence. The tool <b>find_by_look</b> exists because language is
+      the only sensible interface to that question.
+    </p>
+
+    <h3>Connections that say why</h3>
+    <p>
+      The archive holds 49,753 links between videos, and not one of them is a similarity
+      score. Each was written by a person and carries its reason: a shared director, a
+      scene, a lineage. When the agent moves sideways through the archive it can tell you
+      what it followed, because someone knew the answer and wrote it down.
+    </p>
+
+    <h3>Nothing happens off screen</h3>
+    <p>
+      The page exposes eight tools through <b>WebMCP</b>, and each one maps to something
+      you can also do by hand. Every call the agent makes is printed in the conversation
+      with its arguments and what came back. The light in the corner is a tally light: it
+      names who is driving, and never claims an agent is attached when one is not.
+    </p>
+
+    <h3>About the writing</h3>
+    <p>
+      The cultural context, curatorial assessment and director biographies are research,
+      not generated blurbs. The agent is instructed to quote them rather than invent, so
+      what you read about a video is what a person recorded about it.
+    </p>
+
+    <button class="sheet-go" id="sheetGo">Start watching</button>
+  </div>
+</div>
+
 <div class="app">
 
   <header class="bar">
@@ -18,6 +83,7 @@
       <span><b id="cEdges">49,753</b> connections</span>
       <span><b>1966</b>–<b>2026</b></span>
     </div>
+    <button class="info" id="info" aria-label="About this project" title="About this project">i</button>
     <div class="tally" id="tally" data-state="off"><i></i><span id="tallyText">No agent</span></div>
   </header>
 
@@ -76,6 +142,7 @@
 <script src="ui.js"></script>
 <script src="tools.js"></script>
 <script src="chat.js"></script>
+<script src="gate.js"></script>
 <script src="boot.js"></script>
 </body>
 </html>

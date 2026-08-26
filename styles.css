@@ -279,3 +279,120 @@ a{color:inherit}
 }
 .followups button:hover{border-color:var(--tally);color:var(--paper);background:rgba(255,176,0,.06)}
 .followups button:focus-visible{outline:2px solid var(--tally);outline-offset:2px}
+
+/* ==========================================================================
+   THE GATE
+   The opening is a match cut: real frames from the archive, cut on a hard
+   rhythm, resolving into the wordmark. No fades. A cut is a cut.
+   ========================================================================== */
+.gate{
+  position:fixed;inset:0;z-index:100;background:var(--room);
+  display:grid;place-items:center;overflow:hidden;
+}
+.gate.out{animation:gateout .5s ease forwards;pointer-events:none}
+@keyframes gateout{to{opacity:0;transform:scale(1.03)}}
+
+.gate-film{position:absolute;inset:0}
+.gate-film img{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  opacity:0;filter:grayscale(1) contrast(1.2) brightness(.42);
+  /* frames carry their own broadcast watermarks in the corners. push them out. */
+  transform:scale(1.34);
+}
+.gate-film img.on{opacity:1}
+.gate-scrim{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(58% 52% at 50% 45%,rgba(11,14,20,.5),rgba(11,14,20,.96) 74%),
+    linear-gradient(180deg,rgba(11,14,20,.85) 0%,transparent 22%,transparent 74%,rgba(11,14,20,.95) 100%);
+}
+
+.gate-body{position:relative;text-align:center;padding:32px;max-width:660px}
+.gate-mark{display:flex;align-items:baseline;justify-content:center;gap:14px}
+.gate-mark b,.gate-mark i{
+  font-family:var(--serif);font-weight:400;font-size:clamp(46px,9vw,104px);line-height:1;
+  opacity:0;animation:cutin .01s forwards;
+}
+.gate-mark b{animation-delay:.85s}
+.gate-mark i{font-style:italic;color:var(--dim);animation-delay:1.05s}
+@keyframes cutin{to{opacity:1}}
+
+.gate-line{
+  font-size:16px;line-height:1.65;color:var(--dim);max-width:46ch;margin:26px auto 0;
+  opacity:0;animation:cutin .01s 1.35s forwards;
+}
+
+/* six channels sweeping to their real positions: the instrument waking up */
+.gate-meter{display:flex;justify-content:center;gap:5px;margin:30px 0 32px;height:26px}
+.gate-meter span{
+  width:2px;background:var(--paper);align-self:flex-end;height:4px;
+  animation:sweep .9s cubic-bezier(.2,.9,.3,1) forwards;opacity:.85;
+}
+.gate-meter span:nth-child(6n+1){background:var(--ch-r)}
+.gate-meter span:nth-child(6n+3){background:var(--ch-g)}
+.gate-meter span:nth-child(6n+5){background:var(--ch-b)}
+@keyframes sweep{to{height:var(--h)}}
+
+.gate-enter{
+  font-family:var(--mono);font-size:11px;letter-spacing:.28em;text-transform:uppercase;
+  color:var(--room);background:var(--paper);padding:14px 40px;border-radius:2px;
+  opacity:0;animation:cutin .01s 1.6s forwards;transition:background .15s,transform .15s;
+}
+.gate-enter:hover{background:var(--tally);transform:translateY(-1px)}
+.gate-enter:focus-visible{outline:2px solid var(--tally);outline-offset:4px}
+.gate-foot{
+  font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--dimmer);
+  margin:24px 0 0;opacity:0;animation:cutin .01s 1.8s forwards;
+}
+
+/* ------------------------------------------------------------- the sheet -- */
+.info{
+  width:26px;height:26px;border-radius:50%;border:1px solid var(--rule-2);color:var(--dim);
+  font-family:var(--serif);font-size:14px;line-height:1;margin-left:auto;transition:.15s;flex:0 0 auto;
+}
+.info:hover{border-color:var(--tally);color:var(--tally)}
+.info:focus-visible{outline:2px solid var(--tally);outline-offset:3px}
+.bar .tally{margin-left:14px}
+
+.sheet{
+  position:fixed;inset:0;z-index:90;background:rgba(6,8,12,.72);
+  backdrop-filter:blur(3px);display:grid;place-items:center;padding:24px;
+  animation:cutin .18s ease forwards;
+}
+.sheet-card{
+  position:relative;background:var(--panel);border:1px solid var(--rule-2);border-radius:3px;
+  max-width:660px;width:100%;max-height:86vh;overflow-y:auto;padding:44px 48px 40px;
+}
+.sheet-card::-webkit-scrollbar{width:10px}
+.sheet-card::-webkit-scrollbar-thumb{background:var(--rule)}
+.sheet-x{
+  position:absolute;right:14px;top:12px;width:30px;height:30px;color:var(--dim);font-size:20px;
+}
+.sheet-x:hover{color:var(--paper)}
+.sheet-card h2{
+  font-family:var(--serif);font-weight:400;font-size:31px;line-height:1.15;margin:0 0 18px;
+}
+.sheet-lede{font-size:17px;line-height:1.6;color:var(--paper);margin:0 0 30px;max-width:56ch}
+.sheet-card h3{
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.19em;text-transform:uppercase;
+  color:var(--tally);margin:0 0 9px;font-weight:500;
+}
+.sheet-card p{font-size:14.5px;line-height:1.7;color:#C6D0DE;margin:0 0 26px;max-width:62ch}
+.sheet-card p b{color:var(--paper);font-family:var(--mono);font-size:13px;font-weight:500}
+.sheet-card p em{color:var(--paper);font-style:italic}
+.sheet-go{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--room);background:var(--paper);padding:12px 28px;border-radius:2px;transition:.15s;
+}
+.sheet-go:hover{background:var(--tally)}
+.sheet-go:focus-visible{outline:2px solid var(--tally);outline-offset:3px}
+
+@media(max-width:640px){
+  .sheet-card{padding:34px 24px 30px}
+  .sheet-card h2{font-size:25px}
+}
+@media(prefers-reduced-motion:reduce){
+  .gate-mark b,.gate-mark i,.gate-line,.gate-enter,.gate-foot{animation:none;opacity:1}
+  .gate-meter span{animation:none;height:var(--h)}
+  .gate-film img{transition:none}
+}
