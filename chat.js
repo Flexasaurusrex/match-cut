@@ -47,10 +47,13 @@ const Chat = (() => {
     thread().appendChild(d); scroll();
   }
 
-  async function ask(text) {
+  const ask = (text) => run(text, true);
+  const nudge = (text) => run(text, false);
+
+  async function run(text, fromPerson) {
     if (busy || !text.trim()) return;
     busy = true; $('send').disabled = true;
-    turn('you', text);
+    if (fromPerson) turn('you', text);
     history.push({ role: 'user', content: text });
 
     const schemas = TOOLS.map(t => ({ name: t.name, description: t.description, inputSchema: t.inputSchema }));
@@ -116,6 +119,6 @@ const Chat = (() => {
       ask(v);
     });
   }
-  return { init, ask };
+  return { init, ask, nudge, get busy() { return busy; } };
 })();
 window.Chat = Chat;

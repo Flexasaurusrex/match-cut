@@ -108,6 +108,7 @@ window.Demo = Demo;
 (async () => {
   await App.boot();
   Chat.init();
+  Radio.init();
 
   // Is a model available? Decides whether starters talk or run scripted.
   try {

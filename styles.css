@@ -413,3 +413,18 @@ a{color:inherit}
 .sheet-card p a:hover{border-bottom-color:var(--tally)}
 .sheet-card p a b{color:inherit;font-family:var(--sans);font-size:inherit;font-weight:600}
 .sheet-note{font-size:12.5px !important;color:var(--dimmer) !important;margin-top:-12px !important}
+
+/* ------------------------------------------------- continuous play ------- */
+.radio{
+  margin-left:auto;display:flex;align-items:center;gap:8px;padding:6px 12px;
+  border:1px solid var(--rule-2);border-radius:2px;color:var(--dim);
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+  transition:.15s;flex:0 0 auto;
+}
+.radio i{width:7px;height:7px;border-radius:50%;background:var(--rule-2);flex:0 0 auto;transition:.15s}
+.radio:hover{border-color:var(--dim);color:var(--paper)}
+.radio[aria-pressed="true"]{border-color:var(--tally);color:var(--tally);background:rgba(255,176,0,.08)}
+.radio[aria-pressed="true"] i{background:var(--tally);box-shadow:0 0 0 3px rgba(255,176,0,.2);animation:pulse 1.8s infinite}
+.radio:focus-visible{outline:2px solid var(--tally);outline-offset:3px}
+.bar .info{margin-left:12px}
+@media(max-width:900px){.radio span{display:none}.radio{padding:6px 9px}}

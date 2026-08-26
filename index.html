@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Match Cut</title>
-<meta name="description" content="A film scholar's instrument for 7,139 annotated music videos. Search by visual grammar, follow 49,753 reasoned connections, and watch alongside your agent.">
+<meta name="description" content="A music video archive searchable by visual grammar, with 49,753 reasoned connections. Ask, or let the agent programme a run and say why it goes where it goes.">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/icon-180.png">
@@ -74,6 +74,14 @@
       followed, and you are free to disagree with it.
     </p>
 
+    <h3>Or let it run</h3>
+    <p>
+      Turn on <b>Keep it going</b> and the agent takes over the screen: when a video ends it
+      chooses the next one and says in a line why it went there, usually by following a
+      connection so the run has a thread through it. It is a station programmed live, with its
+      reasoning out loud, and it is off until you ask for it.
+    </p>
+
     <h3>Nothing happens off screen</h3>
     <p>
       The page offers eight tools through <b>WebMCP</b>, and each one maps to something you
@@ -126,6 +134,7 @@
       <span><b id="cEdges">49,753</b> connections</span>
       <span><b>1966</b>–<b>2026</b></span>
     </div>
+    <button class="radio" id="radio" aria-pressed="false" title="Let the agent keep choosing what plays next, and say why each time"><i></i><span>Keep it going</span></button>
     <button class="info" id="info" aria-label="About this project" title="About this project">i</button>
     <div class="tally" id="tally" data-state="off"><i></i><span id="tallyText">No agent</span></div>
   </header>
@@ -185,6 +194,7 @@
 <script src="ui.js"></script>
 <script src="tools.js"></script>
 <script src="chat.js"></script>
+<script src="radio.js"></script>
 <script src="gate.js"></script>
 <script src="boot.js"></script>
 </body>
