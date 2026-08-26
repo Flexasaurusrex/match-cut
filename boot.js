@@ -118,6 +118,7 @@ window.Demo = Demo;
 
   const ok = await registerTools();
   if (!ok) UI.agentStatus('off');
+  UI.modelStatus(window.MODEL_READY);
   await Demo.call('archive_stats', {});
 
   // ?demo=N runs a scripted line on load, for screenshots and the demo film

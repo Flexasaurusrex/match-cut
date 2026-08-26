@@ -175,34 +175,53 @@ const UI = (() => {
     flashTally();
   }
 
-  // The tally must never claim an agent is attached when one is not. Amber is
-  // reserved for a real WebMCP agent; blue means the page is running its own
-  // scripted line so you can see the tools work without one.
-  let tallyT, mode = 'off';
-  function flashTally() {
+  // The tally reports WHO is driving the page, and never overstates it.
+  //   webmcp : an external agent registered through document.modelContext
+  //   chat   : the in-page conversation, which calls the same tools
+  //   none   : no model anywhere, starter lines run a scripted stand-in
+  let tallyT, driver = 'none';
+  const LABEL = {
+    webmcp: { idle: 'WebMCP agent', busy: 'Agent working' },
+    chat:   { idle: 'In-page agent', busy: 'Agent working' },
+    none:   { idle: 'No agent \u00b7 demo', busy: 'Running here' },
+  };
+  function setTally(busy) {
     const t = $('tally');
-    if (mode === 'off') return;
-    t.dataset.state = mode === 'agent' ? 'live' : 'local';
-    $('tallyText').textContent = mode === 'agent' ? 'Agent working' : 'Running here';
+    t.dataset.state = driver === 'none' ? 'local' : busy ? 'live' : 'ready';
+    $('tallyText').textContent = LABEL[driver][busy ? 'busy' : 'idle'];
+  }
+  function flashTally() {
+    setTally(true);
     clearTimeout(tallyT);
-    tallyT = setTimeout(() => {
-      t.dataset.state = mode === 'agent' ? 'ready' : 'local';
-      $('tallyText').textContent = mode === 'agent' ? 'Agent connected' : 'No agent · demo';
-    }, 1400);
+    tallyT = setTimeout(() => setTally(false), 1400);
   }
 
+  // An external agent outranks the in-page one, because it is the harder thing
+  // to have working and the thing the page is really built for.
   function agentStatus(state, n) {
-    const t = $('tally');
     if (state === 'ready') {
-      mode = 'agent'; t.dataset.state = 'ready';
-      $('tallyText').textContent = `${n} tools ready`;
-    } else if (state === 'local') {
-      mode = 'local'; t.dataset.state = 'local';
-      $('tallyText').textContent = 'No agent · demo';
-    } else {
-      mode = 'off'; t.dataset.state = 'off';
-      $('tallyText').textContent = 'No agent';
+      driver = 'webmcp';
+      $('tally').title = `${n} tools registered through document.modelContext`;
+    } else if (driver !== 'webmcp') {
+      driver = window.MODEL_READY ? 'chat' : 'none';
     }
+    setTally(false);
+  }
+
+  function modelStatus(ready) {
+    const say = $('say'), send = $('send');
+    if (!ready) {
+      say.placeholder = 'Conversation is off. Press a line above instead.';
+      say.disabled = true; send.disabled = true;
+      $('callCount').textContent = 'no model';
+    } else {
+      $('callCount').textContent = 'ready';
+    }
+    if (driver !== 'webmcp') driver = ready ? 'chat' : 'none';
+    $('tally').title = ready
+      ? 'The conversation in this panel calls the page tools directly'
+      : 'No agent attached and no model configured';
+    setTally(false);
   }
 
   function playerError(blocked, next) {
@@ -210,17 +229,6 @@ const UI = (() => {
     n.textContent = next
       ? `${blocked ? blocked.artist + ' \u2013 ' + blocked.title : 'That video'} is blocked from embedding by the rights holder. Moving to the next match.`
       : 'That video is blocked from embedding and nothing nearby is playable.';
-  }
-
-  function modelStatus(ready) {
-    const say = $('say'), send = $('send');
-    if (ready) {
-      $('callCount').textContent = 'ready';
-      return;
-    }
-    say.placeholder = 'Conversation is off. Press a starter line instead.';
-    say.disabled = true; send.disabled = true;
-    $('callCount').textContent = 'no model';
   }
 
   return { onCorpusReady, paint, paintDetail, paintEdges, paintQueue, paintCalls, agentStatus, playerError, modelStatus };
