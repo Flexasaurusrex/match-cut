@@ -18,9 +18,9 @@ cannot express:
   agent can answer *"find something shot like this but from a different era"*.
   Values are banded against the archive's own distribution, so "high motion" means
   high for this corpus, not an arbitrary number.
-- **`follow_connection`** — 49,753 connections written by hand, each carrying the
-  **reason** it exists. Not cosine similarity. The agent can say *why* one video
-  leads to the next, because a person wrote it down.
+- **`follow_connection`** — 49,753 connections, each carrying the **reason** it
+  exists: a shared director, era, movement or tag. Not a cosine score. The agent
+  can say *why* one video leads to the next, because the edge states it.
 - **`get_annotation`** — real research prose per video: cultural context,
   curatorial assessment, genre significance, era, director biography. The tool
   description tells the agent to quote it rather than invent facts.
@@ -43,7 +43,7 @@ present.
 |---|---|
 | `search_archive` | Text plus facets: director, narrative type, visual era, year range, tier |
 | `find_by_look` | Search by visual grammar, or match the look of a given video |
-| `follow_connection` | Walk the hand-authored graph, with reasons |
+| `follow_connection` | Walk the connection graph, with reasons |
 | `play` | Put a video on the shared screen |
 | `now_playing` | Read what is on screen and how far in |
 | `get_annotation` | Fetch the research text for a video |

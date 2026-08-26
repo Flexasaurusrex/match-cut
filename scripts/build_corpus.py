@@ -44,6 +44,8 @@ for c in cards:
         'nt': c.get('narrative_type') or '',
         've': c.get('visual_era') or '',
         'tier': c.get('tier'),
+        'dc': c.get('director_confidence') or '',
+        'vs': c.get('verification_score'),
         'dur': num(c.get('duration')),
         # visual fingerprint, the thing you cannot search for anywhere else
         'fp': {'motion': num(c.get('avg_motion')), 'bright': num(c.get('avg_brightness')),

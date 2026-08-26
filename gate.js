@@ -68,8 +68,11 @@ const Gate = (() => {
   }
 
   function init() {
+    const q = new URLSearchParams(location.search);
+    // ?demo runs a scripted line straight away, so skip the opening
+    if (q.has('demo')) { const g = $('gate'); if (g) g.remove(); }
     // ?about opens straight to the writeup, for sharing and for the demo film
-    if (new URLSearchParams(location.search).has('about')) {
+    if (q.has('about')) {
       const g = $('gate'); if (g) g.remove();
       openSheet();
     }

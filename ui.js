@@ -85,7 +85,14 @@ const UI = (() => {
     $('mTitle').innerHTML = `${esc(c.a)} <em>${esc(c.t)}</em>`;
     const f = [];
     if (c.y) f.push(`<span><b>${c.y}</b></span>`);
-    if (c.d) f.push(`<span>dir. <b>${esc(c.d)}</b></span>`);
+    if (c.d) {
+      // Say how sure the archive is. An attribution presented flatly is a claim;
+      // one carrying its confidence is evidence.
+      const weak = c.dc && c.dc !== 'confirmed';
+      f.push(`<span>dir. <b>${esc(c.d)}</b>${weak ? ` <u title="the archive records this attribution as ${esc(c.dc)}">${esc(c.dc)}</u>` : ''}</span>`);
+    } else if (c.dc === 'unknown') {
+      f.push(`<span>director <u>unrecorded</u></span>`);
+    }
     if (c.nt) f.push(`<span>${esc(c.nt)}</span>`);
     if (c.ve) f.push(`<span>${esc(c.ve)}</span>`);
     f.push(`<span>tier <b>${c.tier}</b></span>`);

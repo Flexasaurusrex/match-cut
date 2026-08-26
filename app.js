@@ -140,7 +140,7 @@ const App = (() => {
     });
     return {
       from: { id: c.id, artist: c.a, title: c.t },
-      note: 'Every edge was authored by hand. The reason is the point.',
+      note: 'Each edge states the reason it exists rather than a similarity score.',
       connections: edges,
     };
   }

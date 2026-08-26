@@ -49,9 +49,9 @@ const TOOLS = [
   {
     name: 'follow_connection',
     description:
-      'Traverse the archive\'s 49,753 hand-authored connections. Unlike similarity scores, ' +
-      'every edge carries a stated REASON (shared director, scene, lineage). Use this to move ' +
-      'sideways through the archive and to explain WHY one video leads to another.',
+      'Traverse the archive\'s 49,753 connections. Unlike a similarity score, every edge ' +
+      'states its REASON: a shared director, era, movement or tag. Use this to move sideways ' +
+      'through the archive and to tell the person WHY one video leads to another.',
     inputSchema: {
       type: 'object',
       properties: { id: { type: 'string', description: 'Video id to walk out from. Defaults to what is playing.' } },

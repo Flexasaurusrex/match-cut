@@ -26,6 +26,9 @@
 }
 
 *{box-sizing:border-box}
+/* A class that sets display beats the browser's [hidden] rule, so hidden stops
+   hiding. Anything using the attribute needs this or it is silently always on. */
+[hidden]{display:none !important}
 html,body{height:100%}
 body{
   margin:0;background:var(--room);color:var(--paper);
@@ -395,4 +398,10 @@ a{color:inherit}
   .gate-mark b,.gate-mark i,.gate-line,.gate-enter,.gate-foot{animation:none;opacity:1}
   .gate-meter span{animation:none;height:var(--h)}
   .gate-film img{transition:none}
+}
+/* confidence, shown rather than claimed */
+.meta .facts u{
+  text-decoration:none;font-family:var(--mono);font-size:9px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--tally);border:1px solid rgba(255,176,0,.4);
+  padding:2px 5px;border-radius:2px;margin-left:5px;
 }
