@@ -1,0 +1,43 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}
+body{width:1200px;height:630px;background:#0B0E14;color:#E8EDF5;overflow:hidden;position:relative;
+     font-family:"Instrument Sans",sans-serif}
+.film{position:absolute;inset:0;display:grid;grid-template-columns:repeat(6,1fr)}
+.film img{width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.2) brightness(.34)}
+.scrim{position:absolute;inset:0;
+  background:radial-gradient(62% 60% at 50% 46%,rgba(11,14,20,.62),rgba(11,14,20,.97) 76%)}
+.body{position:relative;height:100%;display:flex;flex-direction:column;justify-content:center;
+      padding:0 78px}
+.mark{display:flex;align-items:baseline;gap:16px}
+.mark b,.mark i{font-family:"Instrument Serif",serif;font-weight:400;font-size:104px;line-height:1}
+.mark i{font-style:italic;color:#7C8BA1}
+.line{font-size:25px;line-height:1.42;color:#CBD5E3;max-width:23ch;margin-top:26px}
+.meter{display:flex;gap:5px;align-items:flex-end;height:34px;margin-top:38px}
+.meter span{width:3px;background:#E8EDF5}
+.meter span:nth-child(3n+1){background:#FF5D5D}
+.meter span:nth-child(5n+2){background:#5BE39A}
+.meter span:nth-child(7n+3){background:#5AA2FF}
+.foot{position:absolute;left:78px;bottom:52px;display:flex;gap:26px;
+      font-family:"IBM Plex Mono",monospace;font-size:13px;letter-spacing:.13em;color:#7C8BA1}
+.foot b{color:#E8EDF5;font-weight:500}
+.badge{position:absolute;right:78px;bottom:52px;display:flex;align-items:center;gap:9px;
+       border:1px solid #2A3547;padding:9px 14px;border-radius:2px;
+       font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.16em;color:#FFB000}
+.badge i{width:8px;height:8px;border-radius:50%;background:#FFB000;display:block}
+</style></head><body>
+<div class="film" id="film"></div><div class="scrim"></div>
+<div class="body">
+  <div class="mark"><b>Match</b><i>Cut</i></div>
+  <div class="line">Search a music video archive by how something looks, and move through it by why one thing leads to another.</div>
+  <div class="meter" id="meter"></div>
+</div>
+<div class="foot"><span><b>7,139</b> videos</span><span><b>49,753</b> connections</span><span>1966&ndash;2026</span></div>
+<div class="badge"><i></i>WEBMCP</div>
+<script>
+const F=["AEKbFMvkLIc","DfcWOPpmw14","vPzDTfIb0DU","1RZu71ahCtI","LjBo82hQXFA","BeaKNF5ci_M"];
+document.getElementById('film').innerHTML=F.map(id=>`<img src="https://i.ytimg.com/vi/${id}/hqdefault.jpg">`).join('');
+const H=[9,22,14,27,11,19,25,8,17,23,12,26,15,20,7,24,13,21,10,18,26,9,16,22];
+document.getElementById('meter').innerHTML=H.map(h=>`<span style="height:${h}px"></span>`).join('');
+</script></body></html>
