@@ -268,6 +268,17 @@ const UI = (() => {
     setTally(false);
   }
 
+  function transport(canBack, canNext) {
+    const b = $('tBack'), n = $('tNext');
+    if (b) b.disabled = !canBack;
+    if (n) n.disabled = !canNext;
+  }
+
+  function playState(playing) {
+    const p = $('tPlay');
+    if (p) p.innerHTML = playing ? '&#10074;&#10074;' : '&#9654;';
+  }
+
   function playerError(blocked, next) {
     const n = $('mNote'); n.hidden = false;
     n.textContent = next
@@ -275,7 +286,7 @@ const UI = (() => {
       : 'That video is blocked from embedding and nothing nearby is playable.';
   }
 
-  return { onCorpusReady, paint, paintDetail, paintEdges, paintQueue, paintSet, setPosition, paintCalls, agentStatus, playerError, modelStatus };
+  return { onCorpusReady, paint, paintDetail, paintEdges, paintQueue, paintSet, setPosition, paintCalls, agentStatus, playerError, modelStatus, transport, playState };
 })();
 
 window.UI = UI;

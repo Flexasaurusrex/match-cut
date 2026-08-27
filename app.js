@@ -10,6 +10,7 @@ const App = (() => {
     queue: [], qi: 0, setTitle: '',
     calls: [], pct: {}, seq: 0,
     dead: new Set(), lastSkip: 0, pool: [],
+    hist: [], hi: -1, navigating: false,
   };
 
   const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
@@ -176,6 +177,15 @@ const App = (() => {
       return { error: 'that video is blocked from embedding and no alternative was found' };
     }
     S.current = c;
+    if (!S.navigating) {
+      // Drop anything ahead of us, the way a browser does after you go back
+      // and then somewhere new.
+      S.hist = S.hist.slice(0, S.hi + 1);
+      if (S.hist[S.hist.length - 1] !== c.id) S.hist.push(c.id);
+      S.hi = S.hist.length - 1;
+      if (S.hist.length > 200) { S.hist.shift(); S.hi--; }
+    }
+    UI.transport(S.hi > 0, true);
     const token = ++S.seq;            // annotation fetches are async and can land late
     try { UI.paint(c, a.note || ''); }
     catch (e) { console.error('render failed', e); }
@@ -236,6 +246,28 @@ const App = (() => {
     }
   }
 
+  // Back and forward move through what you have actually watched.
+  function back() {
+    if (S.hi <= 0) return;
+    S.navigating = true;
+    S.hi -= 1;
+    play({ id: S.hist[S.hi] });
+    S.navigating = false;
+    UI.transport(S.hi > 0, true);
+  }
+
+  function forward() {
+    if (S.hi < S.hist.length - 1) {
+      S.navigating = true;
+      S.hi += 1;
+      play({ id: S.hist[S.hi] });
+      S.navigating = false;
+      UI.transport(S.hi > 0, true);
+      return true;
+    }
+    return false;
+  }
+
   function jumpTo(id) {
     const i = S.queue.indexOf(id);
     if (i >= 0) { S.qi = i; play({ id: S.queue[i] }); announceNext(); return; }
@@ -261,6 +293,7 @@ const App = (() => {
   // The transport button. At the end of a set it leaves the set rather than
   // looping, so pressing next always moves somewhere new.
   function next() {
+    if (forward()) return;
     if (advanceInSet()) return;
     if (S.queue.length) endOfSet();
     const cur = S.current;
@@ -301,6 +334,8 @@ const App = (() => {
       events: {
         onReady: () => { S.ready = true; },
         onStateChange: (e) => {
+          if (e.data === YT.PlayerState.PLAYING) UI.playState(true);
+          if (e.data === YT.PlayerState.PAUSED) UI.playState(false);
           if (e.data !== YT.PlayerState.ENDED) return;
           if (advanceInSet()) return;                     // still inside a set
           const finished = S.queue.length ? endOfSet() : null;
@@ -353,7 +388,7 @@ const App = (() => {
     UI.paintCalls(S.calls);
   }
 
-  return { boot, bootPlayer, search, findByLook, connections, play, nowPlaying, skipDead, jumpTo, advanceInSet, advanceInSet,
+  return { boot, bootPlayer, search, findByLook, connections, play, nowPlaying, skipDead, jumpTo, advanceInSet, back, next, advanceInSet,
            annotation, queueSet, stats, next, logCall,
            setAgentStatus: (...a) => UI.agentStatus(...a),
            _state: S };

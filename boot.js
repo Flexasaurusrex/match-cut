@@ -110,6 +110,20 @@ window.Demo = Demo;
   Chat.init();
   Radio.init();
 
+  // Transport. Back walks what you have watched; next replays forward history
+  // first, then continues the set or moves on.
+  document.getElementById('tBack').onclick = () => App.back();
+  document.getElementById('tNext').onclick = () => App.next();
+  document.getElementById('tPlay').onclick = () => {
+    const y = App._state.yt; if (!y) return;
+    y.getPlayerState() === 1 ? y.pauseVideo() : y.playVideo();
+  };
+  document.addEventListener('keydown', (e) => {
+    if (['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) return;
+    if (e.key === 'ArrowLeft') { e.preventDefault(); App.back(); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); App.next(); }
+  });
+
   // Is a model available? Decides whether starters talk or run scripted.
   try {
     const r = await fetch('/api/chat').then(r => r.json());

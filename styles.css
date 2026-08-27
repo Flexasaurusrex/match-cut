@@ -460,3 +460,14 @@ a{color:inherit}
 .cue.now .n{color:var(--tally)}
 .cue.done{opacity:.45}
 .cue:focus-visible{outline:2px solid var(--tally);outline-offset:2px}
+
+/* ------------------------------------------------------------ transport -- */
+.meta .row{justify-content:space-between}
+.transport{display:flex;gap:6px;flex:0 0 auto;align-self:center}
+.transport button{
+  width:34px;height:34px;border:1px solid var(--rule-2);border-radius:2px;color:var(--dim);
+  display:flex;align-items:center;justify-content:center;font-size:11px;transition:.15s;
+}
+.transport button:hover:not(:disabled){border-color:var(--tally);color:var(--tally)}
+.transport button:disabled{opacity:.3;cursor:default}
+.transport button:focus-visible{outline:2px solid var(--tally);outline-offset:2px}
