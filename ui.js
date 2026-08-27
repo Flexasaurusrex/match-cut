@@ -159,7 +159,44 @@ const UI = (() => {
   function paintQueue(cards, title, note) {
     const n = $('mNote');
     n.hidden = false;
-    n.textContent = `${title} — ${cards.length} videos. ${note || ''}`.trim();
+    n.textContent = `${title}. ${note || ''}`.trim();
+    paintSet(cards, title, 0);
+  }
+
+  // A set should look like a set: the running order, where you are in it, and
+  // what is next. Queueing silently made it look like one video playing.
+  function paintSet(cards, title, idx) {
+    const bar = $('setbar');
+    if (!bar) return;
+    if (!cards || cards.length < 2) { bar.hidden = true; return; }
+    bar.hidden = false;
+    $('setTitle').textContent = title || 'Set';
+    $('setPos').textContent = `${idx + 1} of ${cards.length}`;
+    $('setrun').innerHTML = cards.map((c, i) => `
+      <button class="cue ${i === idx ? 'now' : i < idx ? 'done' : ''}" data-id="${c.id}">
+        <div class="n">${i === idx ? 'NOW' : String(i + 1).padStart(2, '0')}</div>
+        <div class="a">${esc(c.a)}</div>
+        <div class="t">${esc(c.t)}</div>
+      </button>`).join('');
+    $('setrun').onclick = (e) => {
+      const b = e.target.closest('.cue'); if (!b) return;
+      App.jumpTo(b.dataset.id);
+    };
+    const now = $('setrun').querySelector('.cue.now');
+    if (now) now.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }
+
+  function setPosition(idx, total) {
+    const bar = $('setbar');
+    if (!bar || bar.hidden) return;
+    $('setPos').textContent = `${idx + 1} of ${total}`;
+    [...$('setrun').children].forEach((el, i) => {
+      el.classList.toggle('now', i === idx);
+      el.classList.toggle('done', i < idx);
+      el.querySelector('.n').textContent = i === idx ? 'NOW' : String(i + 1).padStart(2, '0');
+    });
+    const now = $('setrun').querySelector('.cue.now');
+    if (now) now.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
   }
 
   function paintCalls(calls) {
@@ -238,7 +275,7 @@ const UI = (() => {
       : 'That video is blocked from embedding and nothing nearby is playable.';
   }
 
-  return { onCorpusReady, paint, paintDetail, paintEdges, paintQueue, paintCalls, agentStatus, playerError, modelStatus };
+  return { onCorpusReady, paint, paintDetail, paintEdges, paintQueue, paintSet, setPosition, paintCalls, agentStatus, playerError, modelStatus };
 })();
 
 window.UI = UI;

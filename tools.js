@@ -95,8 +95,10 @@ const TOOLS = [
   {
     name: 'queue_set',
     description:
-      'Queue several videos as a run, with a title for the set. Use after assembling something ' +
-      'deliberate, so the user gets a programmed block rather than one video at a time.',
+      'Queue several videos as a run with a title. USE THIS for any request that asks for more ' +
+      'than one video: a set, a run, a playlist, a block, an hour of something. The videos play ' +
+      'through in order automatically and the running order is shown on screen, so do not play ' +
+      'them one at a time. Six to ten is a good length. Say what the thread through the set is.',
     inputSchema: {
       type: 'object',
       properties: {

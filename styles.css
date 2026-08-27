@@ -439,3 +439,24 @@ a{color:inherit}
   font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;line-height:1.55;
   color:var(--dim);
 }
+
+/* ---------------------------------------------- a set, running in order -- */
+.setbar{border-top:1px solid var(--rule);padding-top:14px;margin-top:2px}
+.setbar > header{display:flex;align-items:baseline;gap:10px;margin-bottom:10px}
+.setbar > header i{font-family:var(--mono);font-size:9.5px;color:var(--dimmer);font-style:normal}
+.setrun{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.setrun::-webkit-scrollbar{display:none}
+.cue{
+  flex:0 0 auto;width:150px;text-align:left;border:1px solid var(--rule);border-radius:2px;
+  background:var(--panel-2);padding:8px 9px;transition:.15s;position:relative;
+}
+.cue:hover{border-color:var(--rule-2)}
+.cue .n{font-family:var(--mono);font-size:9px;color:var(--dimmer);letter-spacing:.14em}
+.cue .a{font-size:12px;color:var(--paper);line-height:1.25;margin-top:5px;
+  display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.cue .t{font-size:11px;color:var(--dim);line-height:1.25;margin-top:2px;
+  display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.cue.now{border-color:var(--tally);background:rgba(255,176,0,.07)}
+.cue.now .n{color:var(--tally)}
+.cue.done{opacity:.45}
+.cue:focus-visible{outline:2px solid var(--tally);outline-offset:2px}

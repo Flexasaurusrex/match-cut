@@ -182,6 +182,10 @@ const App = (() => {
     const go = () => S.yt && S.yt.loadVideoById({ videoId: c.id, startSeconds: 0 });
     if (S.ready) go();
     else { let n = 0; const t = setInterval(() => { if (S.ready) { clearInterval(t); go(); } else if (++n > 60) clearInterval(t); }, 200); }
+    if (S.queue.length) {
+      const i = S.queue.indexOf(c.id);
+      if (i >= 0) { S.qi = i; UI.setPosition(i, S.queue.length); }
+    }
     detailFor(c.id).then(d => {
       if (token !== S.seq) return;    // something else is on screen now, drop it
       UI.paintDetail(c, d);
@@ -206,12 +210,36 @@ const App = (() => {
              director_biography: d.dbio || null, techniques: c.tech, subcultures: c.subs };
   }
   function queueSet(a = {}) {
-    const ids = (a.ids || []).filter(id => S.byId.has(id));
+    const ids = (a.ids || []).filter(id => S.byId.has(id) && !S.dead.has(id));
     if (!ids.length) return { error: 'none of those ids are in the archive' };
     S.queue = ids; S.qi = 0; S.setTitle = a.title || 'Untitled set';
-    UI.paintQueue(S.queue.map(id => S.byId.get(id)), S.setTitle, a.note || '');
+    const cards = ids.map(id => S.byId.get(id));
+    UI.paintQueue(cards, S.setTitle, a.note || '');
     play({ id: ids[0], note: a.note || '' });
-    return { queued: ids.length, title: S.setTitle, first: brief(S.byId.get(ids[0])) };
+    announceNext();
+    return {
+      queued: ids.length, title: S.setTitle,
+      running_order: cards.map(c => `${c.a} - ${c.t}`),
+      first: brief(cards[0]),
+    };
+  }
+
+  // Say what is on deck, the same way continuous play does.
+  function announceNext() {
+    if (!window.Chat || !Chat.note) return;
+    const nxt = S.queue[S.qi + 1];
+    if (nxt && S.byId.has(nxt)) {
+      const c = S.byId.get(nxt);
+      Chat.note(`Up next in ${S.setTitle}: ${c.a} \u2014 ${c.t}.`);
+    } else if (S.queue.length) {
+      Chat.note(`Last in ${S.setTitle}.`);
+    }
+  }
+
+  function jumpTo(id) {
+    const i = S.queue.indexOf(id);
+    if (i >= 0) { play(S.queue[i] ? i : 0); return; }
+    play({ id });
   }
   function next() {
     if (!S.queue.length) return;
@@ -281,7 +309,7 @@ const App = (() => {
     UI.paintCalls(S.calls);
   }
 
-  return { boot, bootPlayer, search, findByLook, connections, play, nowPlaying, skipDead,
+  return { boot, bootPlayer, search, findByLook, connections, play, nowPlaying, skipDead, jumpTo,
            annotation, queueSet, stats, next, logCall,
            setAgentStatus: (...a) => UI.agentStatus(...a),
            _state: S };
