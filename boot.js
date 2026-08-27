@@ -110,6 +110,27 @@ window.Demo = Demo;
   Chat.init();
   Radio.init();
 
+  // Phone tabs. Below 1100px the conversation used to be hidden entirely, which
+  // removed the whole point of the page.
+  const tabs = document.getElementById('tabs');
+  const setTab = (t) => {
+    document.body.dataset.tab = t;
+    [...tabs.querySelectorAll('button')].forEach(b =>
+      b.setAttribute('aria-pressed', b.dataset.tab === t ? 'true' : 'false'));
+    if (t === 'talk') document.getElementById('tabDot').classList.remove('on');
+  };
+  setTab('watch');
+  tabs.onclick = (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    setTab(b.dataset.tab);
+  };
+  // Mark the conversation tab when the agent says something you cannot see.
+  window.notifyTalk = () => {
+    if (document.body.dataset.tab !== 'talk' && window.innerWidth <= 1100) {
+      document.getElementById('tabDot').classList.add('on');
+    }
+  };
+
   // Transport. Back walks what you have watched; next replays forward history
   // first, then continues the set or moves on.
   document.getElementById('tBack').onclick = () => App.back();

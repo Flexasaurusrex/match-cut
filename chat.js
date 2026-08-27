@@ -17,6 +17,7 @@ const Chat = (() => {
   function scroll() { thread().scrollTop = thread().scrollHeight; }
 
   function turn(who, text) {
+    if (window.notifyTalk) notifyTalk();
     clearHint();
     const d = document.createElement('div');
     d.className = 'turn ' + (who === 'you' ? 'you' : 'them');
@@ -33,6 +34,7 @@ const Chat = (() => {
     return d;
   }
   function note(text) {
+    if (window.notifyTalk) notifyTalk();
     clearHint();
     const d = document.createElement('div');
     d.className = 'note-line';
@@ -41,6 +43,7 @@ const Chat = (() => {
   }
 
   function toolCall(name, args, result, ms) {
+    if (window.notifyTalk) notifyTalk();
     clearHint();
     const r = result && result.error ? `error: ${result.error}`
       : result && result.results ? `${result.results.length} of ${result.total}`
