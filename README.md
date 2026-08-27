@@ -59,6 +59,7 @@ present.
 | `keep` / `forget` | Save a video to the person's collection, with why |
 | `my_taste` | Read the collection AND its measured shape |
 | `more_like_my_taste` | Recommend from that shape, not from popularity |
+| `find_records` | Real pressings with live Discogs prices, and a link to buy |
 
 ## Running it
 
