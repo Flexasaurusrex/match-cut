@@ -433,3 +433,9 @@ a{color:inherit}
 .radio:focus-visible{outline:2px solid var(--tally);outline-offset:3px}
 .bar .info{margin-left:12px}
 @media(max-width:900px){.radio span{display:none}.radio{padding:6px 9px}}
+/* the app speaking about itself, distinct from you and from the agent */
+.note-line{
+  margin:0 15px 14px;padding:8px 0;border-top:1px solid var(--rule);
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;line-height:1.55;
+  color:var(--dim);
+}

@@ -29,10 +29,41 @@ const Radio = (() => {
   function toggle() {
     on = !on;
     setLabel();
-    if (!on) return;
-    // If the screen is empty, start the run rather than waiting for an ending.
-    if (!App.nowPlaying().playing) advance('Start a run. Pick something worth watching, play it, and say why in one line.');
+    const playing = App.nowPlaying().playing;
+
+    if (!on) {
+      say('Stopped. Nothing will play by itself now.');
+      return;
+    }
+    if (!playing) {
+      // Empty screen: start the run immediately.
+      advance('Start a run. Pick something worth watching, play it, and say why in one line.');
+      return;
+    }
+    // Something is already running. Do not hijack it, but do not sit silent
+    // either: say what happens next, and line up the pick now so the handover
+    // is instant when the video ends.
+    say(`Keeping it going. ${playing.artist} plays out, then I choose the next one.`);
+    lineUp();
   }
+
+  function say(text) {
+    if (window.Chat && Chat.note) Chat.note(text);
+  }
+
+  // Look ahead without touching the screen, so the wait is visibly productive.
+  async function lineUp() {
+    if (!on || working) return;
+    const c = App.connections({});
+    const live = (c.connections || []).filter(e => e.in_archive);
+    if (live.length) {
+      const e = live[Math.floor(Math.random() * Math.min(5, live.length))];
+      queued = e;
+      say(`Lined up: ${e.artist} \u2014 ${e.title}. ${e.reason}.`);
+    }
+  }
+
+  let queued = null;
 
   async function advance(text) {
     if (!on || working) return;
@@ -59,7 +90,17 @@ const Radio = (() => {
   }
 
   // App calls this when a video runs out.
-  function ended() { if (on) advance(); }
+  function ended() {
+    if (!on) return;
+    if (queued && !App._state.dead.has(queued.id)) {
+      const e = queued; queued = null;
+      App.play({ id: e.id, note: e.reason });
+      say(`Following: ${e.reason}.`);
+      lineUp();
+      return;
+    }
+    advance();
+  }
 
   function init() {
     const b = $('radio');

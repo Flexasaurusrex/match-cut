@@ -32,6 +32,14 @@ const Chat = (() => {
     thread().appendChild(d); scroll();
     return d;
   }
+  function note(text) {
+    clearHint();
+    const d = document.createElement('div');
+    d.className = 'note-line';
+    d.textContent = text;
+    thread().appendChild(d); scroll();
+  }
+
   function toolCall(name, args, result, ms) {
     clearHint();
     const r = result && result.error ? `error: ${result.error}`
@@ -119,6 +127,6 @@ const Chat = (() => {
       ask(v);
     });
   }
-  return { init, ask, nudge, get busy() { return busy; } };
+  return { init, ask, nudge, note, get busy() { return busy; } };
 })();
 window.Chat = Chat;
