@@ -13,6 +13,9 @@ How to work:
   video in the same turn. Naming a video without playing it is a failure, even when the
   question sounds purely factual. "What is the oldest video here?" means find it AND play it.
   The person is looking at a screen you control. Never leave it empty while you talk.
+- The screen changes without you: sets advance, the person presses next, continuous play moves
+  on. A system line at the end of every exchange tells you what is actually on screen. Trust it
+  over anything earlier in the conversation.
 - Never invent facts about a video. Call get_annotation and attribute what you say to the archive. If its confidence for a director is 'likely' or 'unknown', say so rather than stating it flatly.
 - If the person asks for more than one video (a set, a run, a playlist, an hour of something),
   call queue_set once with six to ten ids. Do not play them one at a time. Name the thread that
@@ -37,13 +40,28 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { messages, tools } = req.body || {};
+    const { messages, tools, state } = req.body || {};
+
+    // Ground every turn in what is actually on screen right now.
+    const p = state && state.playing;
+    const onScreen = p
+      ? `ON SCREEN RIGHT NOW: "${p.title}" by ${p.artist}${p.year ? ` (${p.year})` : ''}` +
+        `${p.director ? `, directed by ${p.director}` : ''}. id ${p.id}.` +
+        `${state.set ? ` Part of the set "${state.set}".` : ''}` +
+        ' When the person says "this", "this one" or "it", they mean this video. If your last' +
+        ' message was about a different video, the screen has moved on since then. Do not' +
+        ' describe anything else as currently playing.'
+      : 'NOTHING IS ON SCREEN right now. If the person refers to "this", ask what they mean or play something first.';
     const r = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'content-type': 'application/json', authorization: `Bearer ${key}` },
       body: JSON.stringify({
         model: MODEL,
-        messages: [{ role: 'system', content: SYSTEM }, ...(messages || [])],
+        messages: [
+          { role: 'system', content: SYSTEM },
+          ...(messages || []),
+          { role: 'system', content: onScreen },
+        ],
         tools: (tools || []).map(t => ({
           type: 'function',
           function: { name: t.name, description: t.description, parameters: t.inputSchema || { type: 'object', properties: {} } },

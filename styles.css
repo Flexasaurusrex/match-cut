@@ -90,14 +90,24 @@ a{color:inherit}
 @keyframes pulse{50%{box-shadow:0 0 0 8px rgba(255,176,0,0)}}
 
 /* ---------------------------------------------------------------- body -- */
-.main{display:grid;grid-template-columns:minmax(0,1fr) 372px;min-height:0}
-@media(max-width:1100px){.main{grid-template-columns:1fr}}
+/* Stage sits above both columns so a phone can pin it while the content below
+   switches between what you are watching and the conversation. */
+.main{
+  display:grid;min-height:0;
+  grid-template-columns:minmax(0,1fr) 372px;
+  grid-template-rows:auto minmax(0,1fr);
+  grid-template-areas:"stage rail" "left rail";
+}
+.stage{grid-area:stage}
+.left{grid-area:left}
+.right{grid-area:rail}
+.tabs{display:none}
 
 .left{display:flex;flex-direction:column;min-height:0;min-width:0;overflow-y:auto}
 .left::-webkit-scrollbar{width:10px}
 .left::-webkit-scrollbar-thumb{background:var(--rule)}
 .right{border-left:1px solid var(--rule);display:flex;flex-direction:column;min-height:0;background:var(--panel-2)}
-@media(max-width:1100px){.right{display:none}}
+
 
 /* ---------------------------------------------------------------- stage -- */
 .stage{
@@ -105,13 +115,12 @@ a{color:inherit}
   /* 16:9 of the available width, capped so the annotation always has room */
   height:min(42vh, calc((100vw - 372px) * 0.5625));
   display:grid;place-items:center;overflow:hidden;
-  position:sticky;top:0;z-index:3;   /* stays visible while the writing scrolls */
 }
 .stage #screen,.stage iframe{
   position:relative;inset:auto;
   width:min(100%, calc(42vh * 1.7778));aspect-ratio:16/9;height:auto;
 }
-@media(max-width:1100px){.stage{height:min(40vh, calc(100vw * 0.5625))}}
+
 .stage iframe,.stage #screen{position:absolute;inset:0;width:100%;height:100%;border:0}
 
 .empty{
@@ -471,3 +480,68 @@ a{color:inherit}
 .transport button:hover:not(:disabled){border-color:var(--tally);color:var(--tally)}
 .transport button:disabled{opacity:.3;cursor:default}
 .transport button:focus-visible{outline:2px solid var(--tally);outline-offset:2px}
+
+/* ==========================================================================
+   PHONE AND NARROW WINDOWS
+   The conversation used to be hidden below 1100px, which removed the entire
+   point of the page. Stage pins to the top; a tab switches what sits under it.
+   ========================================================================== */
+@media(max-width:1100px){
+  .main{
+    grid-template-columns:1fr;
+    grid-template-rows:auto auto minmax(0,1fr);
+    grid-template-areas:"stage" "tabs" "body";
+  }
+  .stage{
+    grid-area:stage;
+    height:min(38vh, calc(100vw * 0.5625));
+    border-bottom:1px solid var(--rule);
+  }
+  .stage #screen,.stage iframe{width:100%;max-width:none;aspect-ratio:16/9;height:auto}
+
+  .tabs{
+    grid-area:tabs;display:flex;border-bottom:1px solid var(--rule);background:var(--panel-2);
+  }
+  .tabs button{
+    flex:1;padding:13px 8px;font-family:var(--mono);font-size:10px;letter-spacing:.17em;
+    text-transform:uppercase;color:var(--dimmer);border-bottom:2px solid transparent;
+    position:relative;transition:.15s;
+  }
+  .tabs button[aria-pressed="true"]{color:var(--paper);border-bottom-color:var(--tally)}
+  .tabs button i{
+    position:absolute;top:9px;right:14px;width:6px;height:6px;border-radius:50%;
+    background:var(--tally);opacity:0;transition:opacity .2s;
+  }
+  .tabs button i.on{opacity:1}
+
+  .left,.right{grid-area:body;min-height:0}
+  .right{border-left:0}
+  body[data-tab="watch"] .right{display:none}
+  body[data-tab="talk"] .left{display:none}
+
+  .meta{padding:16px 18px 0}
+  .meta h2{font-size:22px}
+  .read{padding:20px 18px 60px}
+  .read p{font-size:15.5px;line-height:1.66}
+  .read p.big{font-size:19px}
+  .fp{grid-template-columns:repeat(3,1fr)}
+  .setrun .cue{width:132px}
+  .edges{grid-template-columns:1fr}
+  .transport button{width:38px;height:38px}
+  .bar{height:52px;gap:12px;padding:0 12px}
+  .bar .counts{display:none}
+  .mark b,.mark i{font-size:19px}
+  .radio span{display:none}
+  .radio{padding:7px 10px}
+  .composer{position:sticky;bottom:0}
+}
+
+@media(max-width:560px){
+  .stage{height:min(34vh, calc(100vw * 0.5625))}
+  .fp{grid-template-columns:repeat(2,1fr)}
+  .meta h2{font-size:19px}
+  .read p.big{font-size:17.5px}
+  .gate-body{padding:24px 20px}
+  .sheet{padding:0}
+  .sheet-card{max-height:100vh;border-radius:0;border:0;padding:30px 20px 26px}
+}

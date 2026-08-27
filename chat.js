@@ -72,7 +72,10 @@ const Chat = (() => {
       for (let hop = 0; hop < 6; hop++) {
         const res = await fetch('/api/chat', {
           method: 'POST', headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ messages: history, tools: schemas }),
+          // The screen can change without the agent touching it: a set advances,
+          // the person hits next, continuous play moves on. Send the current
+          // state every turn so "this one" always means what is actually on.
+          body: JSON.stringify({ messages: history, tools: schemas, state: App.nowPlaying() }),
         }).then(r => r.json()).catch(e => ({ error: String(e.message || e) }));
 
         spinner.remove();

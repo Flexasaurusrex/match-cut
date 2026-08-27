@@ -235,15 +235,17 @@ const App = (() => {
   }
 
   // Say what is on deck, the same way continuous play does.
+  // Name what just started AND what follows. Announcing only the next one, at
+  // the moment a new video appears, reads as though the wrong thing played.
   function announceNext() {
-    if (!window.Chat || !Chat.note) return;
-    const nxt = S.queue[S.qi + 1];
-    if (nxt && S.byId.has(nxt)) {
-      const c = S.byId.get(nxt);
-      Chat.note(`Up next in ${S.setTitle}: ${c.a} \u2014 ${c.t}.`);
-    } else if (S.queue.length) {
-      Chat.note(`Last in ${S.setTitle}.`);
-    }
+    if (!window.Chat || !Chat.note || !S.queue.length) return;
+    const cur = S.byId.get(S.queue[S.qi]);
+    const nxt = S.queue[S.qi + 1] ? S.byId.get(S.queue[S.qi + 1]) : null;
+    const pos = `${S.qi + 1} of ${S.queue.length}`;
+    if (!cur) return;
+    Chat.note(nxt
+      ? `${S.setTitle} \u00b7 ${pos}. Now: ${cur.a} \u2014 ${cur.t}. Then: ${nxt.a} \u2014 ${nxt.t}.`
+      : `${S.setTitle} \u00b7 ${pos}. Now: ${cur.a} \u2014 ${cur.t}. Last in the set.`);
   }
 
   // Back and forward move through what you have actually watched.
@@ -257,15 +259,13 @@ const App = (() => {
   }
 
   function forward() {
-    if (S.hi < S.hist.length - 1) {
-      S.navigating = true;
-      S.hi += 1;
-      play({ id: S.hist[S.hi] });
-      S.navigating = false;
-      UI.transport(S.hi > 0, true);
-      return true;
-    }
-    return false;
+    if (S.hi >= S.hist.length - 1) return false;
+    S.navigating = true;
+    S.hi += 1;
+    play({ id: S.hist[S.hi] });
+    S.navigating = false;
+    UI.transport(S.hi > 0, true);
+    return true;
   }
 
   function jumpTo(id) {
@@ -388,8 +388,9 @@ const App = (() => {
     UI.paintCalls(S.calls);
   }
 
-  return { boot, bootPlayer, search, findByLook, connections, play, nowPlaying, skipDead, jumpTo, advanceInSet, back, next, advanceInSet,
-           annotation, queueSet, stats, next, logCall,
+  return { boot, bootPlayer, search, findByLook, connections, play, nowPlaying,
+           skipDead, jumpTo, advanceInSet, back, next,
+           annotation, queueSet, stats, logCall,
            setAgentStatus: (...a) => UI.agentStatus(...a),
            _state: S };
 })();

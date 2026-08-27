@@ -148,15 +148,21 @@
 
   <div class="main">
 
-    <div class="left">
-      <div class="stage" id="stage">
-        <div id="screen"></div>
-        <div class="empty" id="empty">
-          <h1>Every video in here is described by <em>how it looks</em>, not just what it is called.</h1>
-          <div class="starters" id="starters"></div>
-          <p class="lab" style="max-width:44ch;line-height:1.7">Ask your agent, or press a line to run it here</p>
-        </div>
+    <div class="stage" id="stage">
+      <div id="screen"></div>
+      <div class="empty" id="empty">
+        <h1>Every video in here is described by <em>how it looks</em>, not just what it is called.</h1>
+        <div class="starters" id="starters"></div>
+        <p class="lab" style="max-width:44ch;line-height:1.7">Ask your agent, or press a line to run it here</p>
       </div>
+    </div>
+
+    <nav class="tabs" id="tabs">
+      <button data-tab="watch" aria-pressed="true">Watching</button>
+      <button data-tab="talk" aria-pressed="false">Conversation<i id="tabDot"></i></button>
+    </nav>
+
+    <div class="left">
 
       <div class="meta" id="meta" hidden>
         <div class="row">
