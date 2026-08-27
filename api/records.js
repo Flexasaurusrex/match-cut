@@ -23,22 +23,29 @@ export default async function handler(req, res) {
   if (!artist) return res.status(200).json({ error: 'artist required' });
 
   try {
-    const q = new URLSearchParams({
-      q: [artist, title].filter(Boolean).join(' '),
-      type: 'release', per_page: '12',
-    });
+    // Search the artist field rather than free text, so results are their
+    // releases rather than anything mentioning the name.
+    const q = new URLSearchParams({ artist, type: 'release', per_page: '40' });
+    if (title) q.set('release_title', title);
     if (want) q.set('format', want);
     const search = await dg(`https://api.discogs.com/database/search?${q}`);
 
     // one release per pressing family, so the list is not six copies of one record
+    // One per master so the shelf is different records, not six pressings of one,
+    // and prefer physical formats over files.
     const seen = new Set();
     const picks = [];
-    for (const r of (search.results || [])) {
-      const fam = `${r.master_id || r.id}`;
-      if (seen.has(fam)) continue;
-      seen.add(fam);
-      picks.push(r);
-      if (picks.length >= 5) break;
+    const physical = (r) => (r.format || []).some(f => /vinyl|cd|cassette|lp/i.test(f));
+    for (const pass of [true, false]) {
+      for (const r of (search.results || [])) {
+        if (physical(r) !== pass) continue;
+        const fam = `${r.master_id || r.id}`;
+        if (seen.has(fam)) continue;
+        seen.add(fam);
+        picks.push(r);
+        if (picks.length >= 6) break;
+      }
+      if (picks.length >= 6) break;
     }
 
     // real marketplace prices, top few only, to stay inside the rate limit
