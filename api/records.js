@@ -42,7 +42,9 @@ export default async function handler(req, res) {
     }
 
     // real marketplace prices, top few only, to stay inside the rate limit
-    const priced = await Promise.all(picks.map(async (r) => {
+    // sequential with a small gap: 25 requests a minute unauthenticated
+    const priced = [];
+    for (const r of picks) {
       let price = null, currency = null, forSale = null;
       try {
         const full = await dg(`https://api.discogs.com/releases/${r.id}`);
@@ -50,7 +52,7 @@ export default async function handler(req, res) {
         currency = price != null ? 'USD' : null;
         forSale = full.num_for_sale ?? null;
       } catch (e) {}
-      return {
+      priced.push({
         id: r.id,
         title: (r.title || '').replace(/^.*? - /, ''),
         artist: (r.title || '').split(' - ')[0],
@@ -65,15 +67,18 @@ export default async function handler(req, res) {
         copies_for_sale: forSale,
         buy: `https://www.discogs.com/sell/release/${r.id}`,
         listing: `https://www.discogs.com${r.uri || ''}`,
-      };
-    }));
+      });
+      await new Promise(x => setTimeout(x, 120));
+    }
 
     res.setHeader('Cache-Control', 'public, s-maxage=43200, stale-while-revalidate=86400');
     return res.status(200).json({
       artist, title: title || null,
       source: 'Discogs marketplace',
       note: 'Prices are the lowest currently listed on Discogs. Buying happens on Discogs, not here.',
-      releases: priced.filter(r => r.lowest_price != null || r.copies_for_sale),
+      // Keep everything found. A price lookup that hit the rate limit still has
+      // a real release behind it, and the panel says "see listing" for those.
+      releases: priced,
     });
   } catch (err) {
     return res.status(200).json({ error: String(err.message || err), releases: [] });
