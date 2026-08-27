@@ -151,6 +151,24 @@ const TOOLS = [
     run: (a) => App.fromTaste(a),
   },
   {
+    name: 'find_records',
+    description:
+      'Find real physical releases you can actually buy for the artist on screen: vinyl, CDs, ' +
+      'cassettes. Returns pressings with year, label, catalogue number, country and the lowest ' +
+      'price currently listed on the Discogs marketplace, plus a link to buy. Use it when someone ' +
+      'likes what is playing and wants to own it, or asks what it is worth. Prices are live, do ' +
+      'not guess at them.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        artist: { type: 'string', description: 'Defaults to the artist on screen' },
+        title: { type: 'string', description: 'Optional album or track to narrow it' },
+        format: { type: 'string', enum: ['Vinyl', 'CD', 'Cassette'], description: 'Optional' },
+      },
+    },
+    run: (a) => App.findRecords(a),
+  },
+  {
     name: 'archive_stats',
     description: 'Describe what is in the archive: size, year range, directors, eras and how it was annotated. Use to orient yourself before searching.',
     inputSchema: { type: 'object', properties: {} },

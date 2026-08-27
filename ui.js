@@ -141,6 +141,7 @@ const UI = (() => {
     if (note) { n.hidden = false; n.textContent = note; } else { n.hidden = true; }
     paintFP(c);
     markKept();
+    const sh = $('shop'); if (sh) sh.hidden = true;   // pressings are per artist
     paintEdges(App.connections({ id: c.id }));
     // Blank the previous annotation; the new one arrives async. This replaces
     // #readHint, so never reach for that element again after the first paint.
@@ -309,6 +310,26 @@ const UI = (() => {
     setTally(false);
   }
 
+  function paintRecords(artist, releases) {
+    const bar = $('shop');
+    if (!bar) return;
+    if (!releases || !releases.length) { bar.hidden = true; return; }
+    bar.hidden = false;
+    $('shopNote').textContent = `${artist} \u00b7 lowest listed on Discogs`;
+    $('shoprun').innerHTML = releases.map(r => `
+      <a class="rec" href="${esc(r.buy)}" target="_blank" rel="noopener">
+        <span class="sleeve">${r.thumb ? `<img src="${esc(r.thumb)}" alt="" loading="lazy">` : ''}</span>
+        <span class="b">
+          <span class="t">${esc(r.title)}</span>
+          <span class="m">${[r.year, r.format, r.label].filter(Boolean).map(esc).join(' \u00b7 ')}</span>
+          <span class="p">
+            <b>${r.lowest_price != null ? '$' + Number(r.lowest_price).toFixed(2) : 'see listing'}</b>
+            <u>${r.copies_for_sale ? r.copies_for_sale + ' for sale' : 'Discogs'}</u>
+          </span>
+        </span>
+      </a>`).join('');
+  }
+
   function paintKeep(cards, meta) {
     const bar = $('keepbar');
     if (!bar) return;
@@ -355,7 +376,7 @@ const UI = (() => {
       : 'That video is blocked from embedding and nothing nearby is playable.';
   }
 
-  return { onCorpusReady, paint, paintDetail, paintEdges, paintQueue, paintSet, setPosition, paintCalls, agentStatus, playerError, modelStatus, transport, playState, deepReady, paintKeep, markKept };
+  return { onCorpusReady, paint, paintDetail, paintEdges, paintQueue, paintSet, setPosition, paintCalls, agentStatus, playerError, modelStatus, transport, playState, deepReady, paintKeep, markKept, paintRecords };
 })();
 
 window.UI = UI;

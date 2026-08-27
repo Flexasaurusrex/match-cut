@@ -356,6 +356,25 @@ const App = (() => {
     };
   }
 
+  /* ---------------------------------------------------------- records --- */
+  // Real pressings with real prices. Nothing is invented and nothing is sold
+  // here: the buy link goes to the actual Discogs listing.
+  async function findRecords(a = {}) {
+    const cur = S.current;
+    const artist = a.artist || (cur && cur.a);
+    if (!artist) return { error: 'nothing playing and no artist given' };
+    const q = new URLSearchParams({ artist });
+    if (a.title) q.set('title', a.title);
+    if (a.format) q.set('format', a.format);
+    try {
+      const r = await fetch(`/api/records?${q}`).then(x => x.json());
+      if (r.releases && r.releases.length) UI.paintRecords(artist, r.releases);
+      return r;
+    } catch (e) {
+      return { error: 'could not reach the marketplace', releases: [] };
+    }
+  }
+
   /* ------------------------------------------------------------- taste --- */
   // The only state that persists. Written by the agent or by hand, read back by
   // the agent, and kept in the browser rather than on a server, which is the case
@@ -504,7 +523,7 @@ const App = (() => {
   return { boot, bootPlayer, search, findByLook, connections, play, nowPlaying,
            skipDead, jumpTo, advanceInSet, back, next,
            annotation, queueSet, stats, logCall,
-           keepIt, dropIt, myTaste, fromTaste, loadKeep,
+           keepIt, dropIt, myTaste, fromTaste, loadKeep, findRecords,
            setAgentStatus: (...a) => UI.agentStatus(...a),
            _state: S };
 })();
