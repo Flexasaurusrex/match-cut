@@ -46,14 +46,45 @@ const UI = (() => {
     if (g) g.textContent = '';
   }
 
-  // Cold openers assume nothing is on screen yet, so none of them say "this one".
-  const STARTERS = [
-    'Play something by Michel Gondry and tell me why it matters',
-    'Something slow, warm and barely cut',
-    'Find the strangest thing in here and explain it',
-    'Build a set about surrealism in the 90s',
-    'What is the oldest video in this archive?',
-  ];
+  // Cold openers are built from the archive itself and reshuffled every load.
+  // A fixed list of five makes 7,139 videos look like a menu of five.
+  const pick = (a) => a[Math.floor(Math.random() * a.length)];
+  const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+  let STARTERS = [];
+
+  function buildStarters() {
+    const idx = App._state.index;
+    if (!idx.length) return;
+
+    const dirCount = {};
+    for (const c of idx) if (c.d) dirCount[c.d] = (dirCount[c.d] || 0) + 1;
+    const directors = Object.keys(dirCount).filter(d => dirCount[d] >= 6);
+    const bigArtists = [...new Set(idx.filter(c => Number(c.tier) === 1).map(c => c.a))];
+    const decades = ['70s', '80s', '90s', '2000s'];
+    const looks = [
+      'Something slow, warm and barely cut',
+      'Something frantic, cold and cut to pieces',
+      'Something very dark that barely moves',
+      'The brightest, most saturated thing in here',
+      'Something shot like a documentary but is not one',
+    ];
+    const kinds = [
+      () => `Play something by ${pick(directors)} and tell me why it matters`,
+      () => pick(looks),
+      () => `Build a set about ${pick(['surrealism', 'realism', 'experimental film', 'performance'])} in the ${pick(decades)}`,
+      () => pick([
+        'What is the oldest video in this archive?',
+        'Find the strangest thing in here and explain it',
+        'Show me a video the archive is unsure about',
+        'What is the most cut video in here?',
+      ]),
+      () => `Find something that looks like ${pick(bigArtists)} but is not`,
+    ];
+    STARTERS = kinds.map(f => { try { return f(); } catch (e) { return null; } }).filter(Boolean);
+    STARTERS = shuffle(STARTERS);
+  }
+
   // Follow-ups only appear once there is a video to refer to.
   const FOLLOWUPS = [
     ['Something that looks like this, from another era', 1],
@@ -61,15 +92,15 @@ const UI = (() => {
     ['Follow a connection from here', 3],
     ['Now show me its opposite', 1],
   ];
-  const DEMO_FOR_STARTER = [0, 2, 1, 4, 0];   // scripted stand-in per cold opener
 
   function renderStarters() {
-    $('starters').innerHTML = STARTERS.map((s,i) => `<button data-i="${i}">${esc(s)}</button>`).join('');
+    buildStarters();
+    $('starters').innerHTML = STARTERS.map((s, i) => `<button data-i="${i}">${esc(s)}</button>`).join('');
     $('starters').onclick = (e) => {
       const b = e.target.closest('button'); if (!b) return;
-      const i = Number(b.dataset.i);
-      if (window.Chat && window.MODEL_READY) Chat.ask(STARTERS[i]);
-      else Demo.run(DEMO_FOR_STARTER[i]);
+      const text = STARTERS[Number(b.dataset.i)];
+      if (window.Chat && window.MODEL_READY) Chat.ask(text);
+      else Demo.run(Number(b.dataset.i) % 5);
     };
   }
 
