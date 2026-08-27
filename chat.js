@@ -6,6 +6,22 @@
 const Chat = (() => {
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  // Models write markdown. Render the little of it they actually use, and turn
+  // links into something you can press rather than a URL sitting in a sentence.
+  function rich(text) {
+    let h = esc(text);
+    h = h.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
+      (m, label, url) => `<a class="chip" href="${url}" target="_blank" rel="noopener">${label}</a>`);
+    h = h.replace(/(^|[\s(])(https?:\/\/[^\s<)]+)/g,
+      (m, pre, url) => `${pre}<a class="chip" href="${url}" target="_blank" rel="noopener">Open</a>`);
+    h = h.replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+    h = h.replace(/(?<![*\w])\*([^*\n]+)\*(?![*\w])/g, '<em>$1</em>');
+    h = h.replace(/`([^`]+)`/g, '<code>$1</code>');
+    h = h.replace(/(?:^|\n)\s*(\d+)\.\s+/g, '<br>$1. ');
+    h = h.replace(/(?:^|\n)\s*[-\u2022]\s+/g, '<br>\u00b7 ');
+    return h;
+  }
   const thread = () => $('thread');
   let history = [], busy = false, cleared = false;
 
@@ -21,7 +37,7 @@ const Chat = (() => {
     clearHint();
     const d = document.createElement('div');
     d.className = 'turn ' + (who === 'you' ? 'you' : 'them');
-    d.innerHTML = `<div class="who">${who === 'you' ? 'You' : 'Match Cut'}</div><div class="b">${esc(text)}</div>`;
+    d.innerHTML = `<div class="who">${who === 'you' ? 'You' : 'Match Cut'}</div><div class="b">${who === 'you' ? esc(text) : rich(text)}</div>`;
     thread().appendChild(d); scroll();
     return d;
   }
