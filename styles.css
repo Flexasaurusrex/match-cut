@@ -554,9 +554,14 @@ a{color:inherit}
    With nothing playing there is no video to keep 16:9 for, so let the opening
    panel take the room it needs instead of clipping inside a fixed stage.
    --------------------------------------------------------------------------- */
+/* With nothing playing there is no aspect ratio to hold, at any width. A short
+   window made 42vh too small for the headline plus five prompts, and the stage
+   clipped them. */
+body[data-empty] .stage{height:auto;min-height:0;display:block;overflow:visible}
+body[data-empty] .empty{position:relative;inset:auto;padding:52px 32px 56px;min-height:0}
+
 @media(max-width:1100px){
-  body[data-empty] .stage{height:auto;min-height:0;display:block;overflow:visible}
-  body[data-empty] .empty{position:relative;inset:auto;padding:26px 18px 30px;min-height:0}
+  body[data-empty] .empty{padding:26px 18px 30px}
   body[data-empty] .empty h1{font-size:clamp(19px,5.6vw,26px);max-width:22ch}
   body[data-empty] .starters{gap:7px}
   body[data-empty] .starters button{font-size:11px;padding:10px 12px;width:100%;text-align:center}
