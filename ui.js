@@ -36,6 +36,7 @@ const UI = (() => {
           <div class="pin" style="left:50%;opacity:0"></div>
         </div>
       </div>`).join('');
+    document.body.dataset.empty = '1';
     renderStarters();
     const g = $('gateStatus');
     if (g) g.textContent = `${n.toLocaleString()} videos ready in ${ms}ms`;
@@ -118,6 +119,7 @@ const UI = (() => {
   }
 
   function paint(c, note) {
+    document.body.removeAttribute('data-empty');
     $('empty').hidden = true; $('empty').style.display = 'none';
     $('meta').hidden = false;
     $('mTitle').innerHTML = `${esc(c.a)} <em>${esc(c.t)}</em>`;

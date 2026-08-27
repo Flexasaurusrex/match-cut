@@ -549,3 +549,20 @@ a{color:inherit}
   font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;
   color:var(--ch-g);margin:10px 0 0;min-height:12px;opacity:0;animation:cutin .01s 1.9s forwards;
 }
+
+/* ---------------------------------------------------------------------------
+   With nothing playing there is no video to keep 16:9 for, so let the opening
+   panel take the room it needs instead of clipping inside a fixed stage.
+   --------------------------------------------------------------------------- */
+@media(max-width:1100px){
+  body[data-empty] .stage{height:auto;min-height:0;display:block;overflow:visible}
+  body[data-empty] .empty{position:relative;inset:auto;padding:26px 18px 30px;min-height:0}
+  body[data-empty] .empty h1{font-size:clamp(19px,5.6vw,26px);max-width:22ch}
+  body[data-empty] .starters{gap:7px}
+  body[data-empty] .starters button{font-size:11px;padding:10px 12px;width:100%;text-align:center}
+  body[data-empty] .empty .lab{display:none}
+}
+@media(max-width:560px){
+  body[data-empty] .empty h1{font-size:19px;line-height:1.2}
+  body[data-empty] .empty{gap:16px}
+}
