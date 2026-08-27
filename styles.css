@@ -52,7 +52,12 @@ a{color:inherit}
   display:flex;align-items:center;gap:20px;padding:0 18px;height:52px;
   border-bottom:1px solid var(--rule);background:var(--panel-2);flex:0 0 auto;
 }
-.mark{display:flex;align-items:baseline;gap:9px}
+.mark{
+  display:flex;align-items:baseline;gap:9px;text-decoration:none;color:inherit;
+  transition:opacity .15s;
+}
+.mark:hover{opacity:.72}
+.mark:focus-visible{outline:2px solid var(--tally);outline-offset:4px;border-radius:2px}
 .mark b{
   font-family:var(--serif);font-size:23px;font-weight:400;letter-spacing:-.01em;line-height:1;
 }
