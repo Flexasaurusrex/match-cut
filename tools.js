@@ -111,6 +111,46 @@ const TOOLS = [
     run: (a) => App.queueSet(a),
   },
   {
+    name: 'keep',
+    description:
+      'Save what is playing to the person\'s collection, with a short note on why they liked it. ' +
+      'This persists in their browser between visits. Call it when they say they like something, ' +
+      'want to remember it, or want more like it.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', description: 'Defaults to what is playing' },
+        why: { type: 'string', description: 'One line on what they liked about it, in their words if they gave you any' },
+      },
+    },
+    run: (a) => App.keepIt(a),
+  },
+  {
+    name: 'forget',
+    description: 'Remove a video from the person\'s collection.',
+    inputSchema: { type: 'object', properties: { id: { type: 'string', description: 'Defaults to what is playing' } } },
+    run: (a) => App.dropIt(a),
+  },
+  {
+    name: 'my_taste',
+    description:
+      'Read what this person has kept, why they kept it, and the SHAPE of it: their average ' +
+      'motion, brightness, warmth, saturation, contrast and shot length, plus the narrative types, ' +
+      'eras and directors they lean toward. Call this at the start of a session to know who you ' +
+      'are talking to, and before recommending anything.',
+    inputSchema: { type: 'object', properties: {} },
+    run: () => App.myTaste(),
+  },
+  {
+    name: 'more_like_my_taste',
+    description:
+      'Find videos that match the measured look of everything the person has kept, excluding what ' +
+      'they already have. This is recommendation from their own collection rather than from ' +
+      'popularity. Use it when they ask what they should watch.',
+    inputSchema: { type: 'object', properties: { limit: { type: 'integer' } } },
+    run: (a) => App.fromTaste(a),
+  },
+  {
     name: 'archive_stats',
     description: 'Describe what is in the archive: size, year range, directors, eras and how it was annotated. Use to orient yourself before searching.',
     inputSchema: { type: 'object', properties: {} },

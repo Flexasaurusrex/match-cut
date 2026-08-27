@@ -75,6 +75,19 @@
       followed, and you are free to disagree with it.
     </p>
 
+    <h3>It remembers you, and only you</h3>
+    <p>
+      Keep something and it stays, with the reason you kept it. The agent can read that back:
+      not just the list, but its <em>shape</em>, the average motion, brightness, warmth and shot
+      length of everything you have kept, and the eras and directors you lean toward. Ask what to
+      watch and it answers from your own collection rather than from what is popular.
+    </p>
+    <p>
+      That collection lives in your browser. This is the case WebMCP was written for. An agent
+      talking to a server would need your state copied somewhere it can reach; an agent working
+      inside the page just reads what is already there.
+    </p>
+
     <h3>You still have the wheel</h3>
     <p>
       Back and forward step through what you have actually watched, so you can sit with
@@ -92,7 +105,7 @@
 
     <h3>Nothing happens off screen</h3>
     <p>
-      The page offers eight tools through <b>WebMCP</b>, and each one maps to something you
+      The page offers twelve tools through <b>WebMCP</b>, and each one maps to something you
       can also do by hand. Every call is printed in the conversation with its arguments and
       what came back, so you can see how the agent got somewhere rather than only where it
       landed.
@@ -172,12 +185,18 @@
             <button id="tBack" title="Back to the previous video" aria-label="Previous video">&#9664;</button>
             <button id="tPlay" title="Play or pause" aria-label="Play or pause">&#10074;&#10074;</button>
             <button id="tNext" title="Next video" aria-label="Next video">&#9654;</button>
+            <button id="tKeep" title="Keep this one" aria-label="Keep this video">&#9829;</button>
           </div>
         </div>
         <div class="facts" id="mFacts"></div>
         <div class="agent-note" id="mNote" hidden></div>
 
         <div class="fp" id="fp"></div>
+
+        <section class="keepbar" id="keepbar" hidden>
+          <header><span class="lab">Kept</span><i id="keepCount"></i></header>
+          <div class="keeprun" id="keeprun"></div>
+        </section>
 
         <section class="setbar" id="setbar" hidden>
           <header><span class="lab" id="setTitle">Set</span><i id="setPos"></i></header>

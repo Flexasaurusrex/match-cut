@@ -11,6 +11,7 @@ const App = (() => {
     calls: [], pct: {}, seq: 0, extra: null, deep: false,
     dead: new Set(), lastSkip: 0, pool: [],
     hist: [], hi: -1, navigating: false,
+    keep: [],          // what the person has told the agent they like
   };
 
   const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
@@ -355,6 +356,88 @@ const App = (() => {
     };
   }
 
+  /* ------------------------------------------------------------- taste --- */
+  // The only state that persists. Written by the agent or by hand, read back by
+  // the agent, and kept in the browser rather than on a server, which is the case
+  // WebMCP exists for.
+  const KEEP = 'matchcut.keep';
+
+  function loadKeep() {
+    try { S.keep = JSON.parse(localStorage.getItem(KEEP) || '[]'); }
+    catch (e) { S.keep = []; }
+    UI.paintKeep(S.keep.map(k => S.byId.get(k.id)).filter(Boolean), S.keep);
+  }
+  function saveKeep() {
+    try { localStorage.setItem(KEEP, JSON.stringify(S.keep)); } catch (e) {}
+    UI.paintKeep(S.keep.map(k => S.byId.get(k.id)).filter(Boolean), S.keep);
+  }
+
+  function keepIt(a = {}) {
+    const id = a.id || (S.current && S.current.id);
+    const c = S.byId.get(id);
+    if (!c) return { error: 'nothing playing and no id given' };
+    if (S.keep.some(k => k.id === id)) return { already_kept: brief(c), kept: S.keep.length };
+    S.keep.unshift({ id, why: (a.why || '').slice(0, 160), at: Date.now() });
+    saveKeep();
+    return { kept: brief(c), why: a.why || null, total: S.keep.length };
+  }
+
+  function dropIt(a = {}) {
+    const id = a.id || (S.current && S.current.id);
+    const before = S.keep.length;
+    S.keep = S.keep.filter(k => k.id !== id);
+    saveKeep();
+    return { removed: before - S.keep.length, total: S.keep.length };
+  }
+
+  function myTaste() {
+    if (!S.keep.length) {
+      return { kept: 0, note: 'Nothing kept yet. Ask to keep something and it will be here next time.' };
+    }
+    const cards = S.keep.map(k => Object.assign({}, S.byId.get(k.id) ? brief(S.byId.get(k.id)) : { id: k.id }, { why: k.why || null }));
+    const live = S.keep.map(k => S.byId.get(k.id)).filter(Boolean);
+    const avg = (f) => live.length ? +(live.reduce((n, c) => n + c.fp[f], 0) / live.length).toFixed(2) : null;
+    const count = (f) => {
+      const t = {}; for (const c of live) if (c[f]) t[c[f]] = (t[c[f]] || 0) + 1;
+      return Object.entries(t).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, n]) => `${k} (${n})`);
+    };
+    return {
+      kept: S.keep.length,
+      videos: cards,
+      // the shape of what they like, so the agent can act on it rather than guess
+      average_look: { motion: avg('motion'), brightness: avg('bright'), warmth: avg('warm'),
+                      saturation: avg('sat'), contrast: avg('contrast'), shot_seconds: avg('shotlen') },
+      leans_toward: { narrative_type: count('nt'), visual_era: count('ve'), director: count('d') },
+    };
+  }
+
+  // Find something new that matches the shape of what they have kept.
+  function fromTaste(a = {}) {
+    const live = S.keep.map(k => S.byId.get(k.id)).filter(Boolean);
+    if (!live.length) return { error: 'nothing kept yet, so there is no taste to work from' };
+    const avg = {};
+    for (const f of ['motion', 'bright', 'warm', 'sat', 'contrast', 'shotlen']) {
+      avg[f] = live.reduce((n, c) => n + c.fp[f], 0) / live.length;
+    }
+    const keptIds = new Set(S.keep.map(k => k.id));
+    const lim = clamp(a.limit || 8, 1, 30);
+    const scored = [];
+    for (const c of S.index) {
+      if (keptIds.has(c.id) || S.dead.has(c.id)) continue;
+      let d = 0;
+      for (const f in avg) {
+        const hi = S.pct[f] ? (S.pct[f].p67 || 1) : 1;
+        d += Math.pow((c.fp[f] - avg[f]) / hi, 2);
+      }
+      scored.push({ c, d: Math.sqrt(d) });
+    }
+    scored.sort((x, y) => x.d - y.d);
+    return {
+      based_on: `${live.length} kept video${live.length > 1 ? 's' : ''}`,
+      results: sample(scored, lim).map(x => Object.assign(brief(x.c), { look: lookOf(x.c) })),
+    };
+  }
+
   /* ---------------------------------------------------------- youtube --- */
   function bootPlayer() {
     if (S.yt || !(window.YT && window.YT.Player)) return;
@@ -421,6 +504,7 @@ const App = (() => {
   return { boot, bootPlayer, search, findByLook, connections, play, nowPlaying,
            skipDead, jumpTo, advanceInSet, back, next,
            annotation, queueSet, stats, logCall,
+           keepIt, dropIt, myTaste, fromTaste, loadKeep,
            setAgentStatus: (...a) => UI.agentStatus(...a),
            _state: S };
 })();

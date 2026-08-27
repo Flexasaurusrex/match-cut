@@ -27,6 +27,11 @@ cannot express:
   curatorial assessment, genre significance, era, director biography. The tool
   description tells the agent to quote it rather than invent facts.
 
+**User state, which is the other half of the argument.** The collection lives in
+the browser. An agent talking to a server would need that state replicated
+somewhere it can reach. An agent working inside the page just reads what is
+already there, which is the motivation WebMCP was written from.
+
 The page and the agent share one screen. Every tool maps onto something a person
 can also do in the UI, so nothing the agent does happens off-screen, and every
 call it makes is printed in the activity panel with its arguments and result.
@@ -51,6 +56,9 @@ present.
 | `get_annotation` | Fetch the research text for a video |
 | `queue_set` | Programme a run of videos with a title |
 | `archive_stats` | Orient: size, range, vocabularies |
+| `keep` / `forget` | Save a video to the person's collection, with why |
+| `my_taste` | Read the collection AND its measured shape |
+| `more_like_my_taste` | Recommend from that shape, not from popularity |
 
 ## Running it
 

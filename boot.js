@@ -135,6 +135,13 @@ window.Demo = Demo;
   // first, then continues the set or moves on.
   document.getElementById('tBack').onclick = () => App.back();
   document.getElementById('tNext').onclick = () => App.next();
+  document.getElementById('tKeep').onclick = () => {
+    const cur = App.nowPlaying().playing;
+    if (!cur) return;
+    const kept = App._state.keep.some(k => k.id === cur.id);
+    kept ? App.dropIt({ id: cur.id }) : App.keepIt({ id: cur.id });
+    UI.markKept();
+  };
   document.getElementById('tPlay').onclick = () => {
     const y = App._state.yt; if (!y) return;
     y.getPlayerState() === 1 ? y.pauseVideo() : y.playVideo();
@@ -155,6 +162,7 @@ window.Demo = Demo;
   const ok = await registerTools();
   if (!ok) UI.agentStatus('off');
   UI.modelStatus(window.MODEL_READY);
+  App.loadKeep();
   await Demo.call('archive_stats', {});
 
   // ?demo=N runs a scripted line on load, for screenshots and the demo film

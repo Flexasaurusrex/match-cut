@@ -140,6 +140,7 @@ const UI = (() => {
     const n = $('mNote');
     if (note) { n.hidden = false; n.textContent = note; } else { n.hidden = true; }
     paintFP(c);
+    markKept();
     paintEdges(App.connections({ id: c.id }));
     // Blank the previous annotation; the new one arrives async. This replaces
     // #readHint, so never reach for that element again after the first paint.
@@ -308,6 +309,34 @@ const UI = (() => {
     setTally(false);
   }
 
+  function paintKeep(cards, meta) {
+    const bar = $('keepbar');
+    if (!bar) return;
+    if (!cards.length) { bar.hidden = true; return; }
+    bar.hidden = false;
+    $('keepCount').textContent = `${cards.length}`;
+    $('keeprun').innerHTML = cards.map((c, i) => `
+      <button class="kept" data-id="${c.id}">
+        <div class="a">${esc(c.a)}</div>
+        <div class="t">${esc(c.t)}</div>
+        ${meta[i] && meta[i].why ? `<div class="w">${esc(meta[i].why)}</div>` : ''}
+      </button>`).join('');
+    $('keeprun').onclick = (e) => {
+      const b = e.target.closest('.kept'); if (!b) return;
+      App.play({ id: b.dataset.id, note: 'From your collection.' });
+    };
+    markKept();
+  }
+
+  function markKept() {
+    const btn = $('tKeep');
+    if (!btn) return;
+    const cur = App.nowPlaying().playing;
+    const on = cur && App._state.keep.some(k => k.id === cur.id);
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    btn.title = on ? 'Kept' : 'Keep this one';
+  }
+
   function transport(canBack, canNext) {
     const b = $('tBack'), n = $('tNext');
     if (b) b.disabled = !canBack;
@@ -326,7 +355,7 @@ const UI = (() => {
       : 'That video is blocked from embedding and nothing nearby is playable.';
   }
 
-  return { onCorpusReady, paint, paintDetail, paintEdges, paintQueue, paintSet, setPosition, paintCalls, agentStatus, playerError, modelStatus, transport, playState, deepReady };
+  return { onCorpusReady, paint, paintDetail, paintEdges, paintQueue, paintSet, setPosition, paintCalls, agentStatus, playerError, modelStatus, transport, playState, deepReady, paintKeep, markKept };
 })();
 
 window.UI = UI;
