@@ -142,6 +142,14 @@ window.Demo = Demo;
     kept ? App.dropIt({ id: cur.id }) : App.keepIt({ id: cur.id });
     UI.markKept();
   };
+  document.getElementById('tShop').onclick = async () => {
+    if (!App.nowPlaying().playing) return;
+    UI.shopBusy(true);
+    const r = await App.findRecords({});
+    UI.shopBusy(false);
+    App.logCall('find_records', {}, r, 0);
+    document.getElementById('shop').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  };
   document.getElementById('tPlay').onclick = () => {
     const y = App._state.yt; if (!y) return;
     y.getPlayerState() === 1 ? y.pauseVideo() : y.playVideo();

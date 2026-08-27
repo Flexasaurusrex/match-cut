@@ -89,9 +89,10 @@ const UI = (() => {
   // Follow-ups only appear once there is a video to refer to.
   const FOLLOWUPS = [
     ['Something that looks like this, from another era', 1],
+    ['Find me the record for this', 2],
     ['Why does this one matter?', 2],
     ['Follow a connection from here', 3],
-    ['Now show me its opposite', 1],
+    ['Keep this one, I like it', 2],
   ];
 
   function renderStarters() {
@@ -349,6 +350,11 @@ const UI = (() => {
     markKept();
   }
 
+  function shopBusy(on) {
+    const b = $('tShop');
+    if (b) { b.disabled = !!on; b.style.opacity = on ? '.5' : ''; }
+  }
+
   function markKept() {
     const btn = $('tKeep');
     if (!btn) return;
@@ -376,7 +382,7 @@ const UI = (() => {
       : 'That video is blocked from embedding and nothing nearby is playable.';
   }
 
-  return { onCorpusReady, paint, paintDetail, paintEdges, paintQueue, paintSet, setPosition, paintCalls, agentStatus, playerError, modelStatus, transport, playState, deepReady, paintKeep, markKept, paintRecords };
+  return { onCorpusReady, paint, paintDetail, paintEdges, paintQueue, paintSet, setPosition, paintCalls, agentStatus, playerError, modelStatus, transport, playState, deepReady, paintKeep, markKept, paintRecords, shopBusy };
 })();
 
 window.UI = UI;
