@@ -144,9 +144,13 @@ window.Demo = Demo;
   };
   document.getElementById('tShop').onclick = async () => {
     if (!App.nowPlaying().playing) return;
+    const b = document.getElementById('tShop');
+    const label = b.textContent;
+    b.textContent = 'Looking…';
     UI.shopBusy(true);
     const r = await App.findRecords({});
     UI.shopBusy(false);
+    b.textContent = label;
     App.logCall('find_records', {}, r, 0);
     document.getElementById('shop').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   };

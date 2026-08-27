@@ -623,3 +623,12 @@ body[data-empty] .empty{position:relative;inset:auto;padding:52px 32px 56px;min-
 .turn .b a.chip:hover{background:#ffc84d}
 .turn .b code{font-family:var(--mono);font-size:12px;color:var(--paper);background:var(--panel);padding:1px 5px;border-radius:2px}
 .turn .b b{color:var(--paper);font-weight:600}
+/* an action nobody can guess from a glyph, so it says what it does */
+.transport button.wide{
+  width:auto;padding:0 14px;font-family:var(--mono);font-size:10px;letter-spacing:.15em;
+  text-transform:uppercase;white-space:nowrap;
+}
+.transport button.wide:disabled{opacity:.45}
+@media(max-width:640px){
+  .transport button.wide{font-size:9px;letter-spacing:.1em;padding:0 10px}
+}
