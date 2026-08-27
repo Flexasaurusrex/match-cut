@@ -8,7 +8,7 @@ const App = (() => {
     detail: new Map(), shards: new Map(),
     yt: null, ready: false, current: null,
     queue: [], qi: 0, setTitle: '',
-    calls: [], pct: {}, seq: 0,
+    calls: [], pct: {}, seq: 0, extra: null, deep: false,
     dead: new Set(), lastSkip: 0, pool: [],
     hist: [], hi: -1, navigating: false,
   };
@@ -19,18 +19,46 @@ const App = (() => {
 
   /* ------------------------------------------------------------- boot --- */
   async function boot() {
-    const res = await fetch('data/index.json');
-    S.index = await res.json();
-    for (const c of S.index) {
+    // Boot on the small columnar core so the archive is usable immediately,
+    // then stream the heavy fields in behind it. 339K to interactive instead
+    // of 2.6MB.
+    const t0 = performance.now();
+    const core = await fetch('data/core.json').then(r => r.json());
+    const D = core.dict;
+    for (let i = 0; i < core.n; i++) {
+      const c = {
+        id: core.id[i], a: core.a[i], t: core.t[i], y: core.y[i],
+        d: D.d[core.di[i]] || '', nt: D.nt[core.nti[i]] || '',
+        ve: D.ve[core.vei[i]] || '', dc: D.dc[core.dci[i]] || '',
+        tier: core.tier[i], dur: core.dur[i],
+        fp: { motion: core.fp[i][0], bright: core.fp[i][1], warm: core.fp[i][2],
+              sat: core.fp[i][3], contrast: core.fp[i][4], shotlen: core.fp[i][5],
+              cuts: core.fp[i][6], scenes: core.fp[i][7] },
+        tags: [], tech: [], subs: [], conns: [],
+      };
+      S.index.push(c);
       S.byId.set(c.id, c);
       S.byKey.set(key(c.a, c.t), c);
     }
-    // percentile cuts so "high motion" means high *for this archive*
     for (const f of ['motion', 'bright', 'warm', 'sat', 'contrast', 'shotlen']) {
       const v = S.index.map(c => c.fp[f]).filter(x => x > 0).sort((a, b) => a - b);
       S.pct[f] = { p33: v[Math.floor(v.length * 0.33)], p67: v[Math.floor(v.length * 0.67)] };
     }
-    UI.onCorpusReady(S.index.length);
+    UI.onCorpusReady(S.index.length, Math.round(performance.now() - t0));
+
+    // The rest arrives behind the first paint.
+    S.extra = fetch('data/extra.json').then(r => r.json()).then(x => {
+      for (let i = 0; i < S.index.length; i++) {
+        const c = S.index[i];
+        c.tags = x.tags[i] || []; c.tech = x.tech[i] || [];
+        c.subs = x.subs[i] || []; c.conns = x.conns[i] || [];
+      }
+      S.deep = true;
+      UI.deepReady();
+      if (S.current) UI.paintEdges(connections({ id: S.current.id }));
+      return true;
+    }).catch(() => false);
+
     return S.index.length;
   }
 
@@ -152,6 +180,8 @@ const App = (() => {
     const id = a.id || (S.current && S.current.id);
     const c = S.byId.get(id);
     if (!c) return { error: 'nothing playing and no id given' };
+    if (!S.deep) return { from: { id: c.id, artist: c.a, title: c.t }, connections: [],
+                          note: 'The connection graph is still loading. Ask again in a moment.' };
     const edges = (c.conns || []).map(k => {
       const hit = S.byKey.get(key(k.a, k.v));
       return { reason: k.r, kind: k.t, artist: k.a, title: k.v, id: hit ? hit.id : null, in_archive: !!hit };

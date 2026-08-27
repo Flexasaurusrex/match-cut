@@ -19,7 +19,7 @@ const UI = (() => {
 
   let dist = {};   // per-channel distribution, for placing the pin
 
-  function onCorpusReady(n) {
+  function onCorpusReady(n, ms) {
     $('cVideos').textContent = n.toLocaleString();
     const idx = App._state.index;
     for (const ch of CH) {
@@ -37,6 +37,13 @@ const UI = (() => {
         </div>
       </div>`).join('');
     renderStarters();
+    const g = $('gateStatus');
+    if (g) g.textContent = `${n.toLocaleString()} videos ready in ${ms}ms`;
+  }
+
+  function deepReady() {
+    const g = $('gateStatus');
+    if (g) g.textContent = '';
   }
 
   // Cold openers assume nothing is on screen yet, so none of them say "this one".
@@ -286,7 +293,7 @@ const UI = (() => {
       : 'That video is blocked from embedding and nothing nearby is playable.';
   }
 
-  return { onCorpusReady, paint, paintDetail, paintEdges, paintQueue, paintSet, setPosition, paintCalls, agentStatus, playerError, modelStatus, transport, playState };
+  return { onCorpusReady, paint, paintDetail, paintEdges, paintQueue, paintSet, setPosition, paintCalls, agentStatus, playerError, modelStatus, transport, playState, deepReady };
 })();
 
 window.UI = UI;

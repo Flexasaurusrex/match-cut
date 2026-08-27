@@ -70,9 +70,49 @@ for c in cards:
         'fashion': arr(c.get('fashion'), 6),
     }
 
-p = os.path.join(ROOT, 'data', 'index.json')
-json.dump(index, open(p, 'w'), separators=(',', ':'))
-print(f'index.json   {os.path.getsize(p)/1e6:6.1f} MB')
+# Boot payload: columnar, dictionary encoded, no repeated keys. Everything
+# needed to search and to draw a fingerprint, and nothing else.
+def dictionary(vals):
+    seen, out, table = {}, [], []
+    for v in vals:
+        v = v or ''
+        if v not in seen:
+            seen[v] = len(table); table.append(v)
+        out.append(seen[v])
+    return table, out
+
+d_table, d_idx = dictionary([c['d'] for c in index])
+nt_table, nt_idx = dictionary([c['nt'] for c in index])
+ve_table, ve_idx = dictionary([c['ve'] for c in index])
+dc_table, dc_idx = dictionary([c['dc'] for c in index])
+
+FP = ('motion', 'bright', 'warm', 'sat', 'contrast', 'shotlen', 'cuts', 'scenes')
+core = {
+    'n': len(index),
+    'id': [c['id'] for c in index],
+    'a': [c['a'] for c in index],
+    't': [c['t'] for c in index],
+    'y': [c['y'] for c in index],
+    'tier': [c['tier'] for c in index],
+    'dur': [c['dur'] for c in index],
+    'fp': [[c['fp'][k] for k in FP] for c in index],
+    'dict': {'d': d_table, 'nt': nt_table, 've': ve_table, 'dc': dc_table},
+    'di': d_idx, 'nti': nt_idx, 'vei': ve_idx, 'dci': dc_idx,
+}
+q = os.path.join(ROOT, 'data', 'core.json')
+json.dump(core, open(q, 'w'), separators=(',', ':'))
+print(f'core.json    {os.path.getsize(q)/1e6:6.2f} MB')
+
+# Everything else arrives in the background and is merged in as it lands.
+extra = {
+    'tags': [c['tags'] for c in index],
+    'tech': [c['tech'] for c in index],
+    'subs': [c['subs'] for c in index],
+    'conns': [c['conns'] for c in index],
+}
+q = os.path.join(ROOT, 'data', 'extra.json')
+json.dump(extra, open(q, 'w'), separators=(',', ':'))
+print(f'extra.json   {os.path.getsize(q)/1e6:6.2f} MB')
 
 BUCKETS = 128
 os.makedirs(os.path.join(ROOT, 'data/detail'), exist_ok=True)
