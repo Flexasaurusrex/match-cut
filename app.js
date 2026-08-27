@@ -227,6 +227,8 @@ const App = (() => {
       const i = S.queue.indexOf(c.id);
       if (i >= 0) { S.qi = i; UI.setPosition(i, S.queue.length); }
     }
+    // Continuous play should not go quiet because you touched the controls.
+    if (window.Radio && Radio.on) Radio.moved(c);
     detailFor(c.id).then(d => {
       if (token !== S.seq) return;    // something else is on screen now, drop it
       UI.paintDetail(c, d);

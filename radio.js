@@ -5,7 +5,7 @@
 
 const Radio = (() => {
   const $ = (id) => document.getElementById(id);
-  let on = false, working = false;
+  let on = false, working = false, acting = false;
 
   // What the app tells the agent when a video runs out. Not shown as if the
   // person typed it, because they did not.
@@ -51,6 +51,16 @@ const Radio = (() => {
     if (window.Chat && Chat.note) Chat.note(text);
   }
 
+  // The person moved the screen themselves while continuous play is on. Stay in
+  // the conversation: say where they landed and line up from there, because the
+  // previous pick was chosen for a video that is no longer playing.
+  function moved(card) {
+    if (!on || acting) return;
+    queued = null;
+    say(`You skipped ahead. Now: ${card.a} \u2014 ${card.t}.`);
+    lineUp();
+  }
+
   // Look ahead without touching the screen, so the wait is visibly productive.
   async function lineUp() {
     if (!on || working) return;
@@ -94,12 +104,15 @@ const Radio = (() => {
     if (!on) return;
     if (queued && !App._state.dead.has(queued.id)) {
       const e = queued; queued = null;
+      acting = true;
       App.play({ id: e.id, note: e.reason });
+      acting = false;
       say(`Following: ${e.reason}.`);
       lineUp();
       return;
     }
-    advance();
+    acting = true;
+    advance().finally(() => { acting = false; });
   }
 
   function init() {
@@ -109,7 +122,7 @@ const Radio = (() => {
     setLabel();
   }
 
-  return { init, ended, toggle, get on() { return on; } };
+  return { init, ended, toggle, moved, get on() { return on; } };
 })();
 
 window.Radio = Radio;
