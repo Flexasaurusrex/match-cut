@@ -23,9 +23,11 @@ def arr(v, n=8):
     if isinstance(v, list): return [str(x) for x in v[:n]]
     if isinstance(v, str) and v.strip(): return [v]
     return []
-def short(v, n=240):
-    s = re.sub(r'\s+', ' ', str(v or '')).strip()
-    return s[:n]
+def text(v):
+    # No truncation. The prose is the most valuable thing in the archive and the
+    # whole corpus is 17.5MB, sharded 128 ways. Cutting it mid-sentence was
+    # costing 66% of the curatorial assessments and 61% of the director bios.
+    return re.sub(r'\s+', ' ', str(v or '')).strip()
 
 index, detail = [], {}
 for c in cards:
@@ -58,12 +60,12 @@ for c in cards:
         'conns': conns,
     })
     detail[cid] = {
-        'context': short(c.get('cultural_context'), 900),
-        'curatorial': short(c.get('curatorial'), 500),
-        'sig': short(c.get('genre_significance'), 500),
-        'era': short(c.get('era'), 400),
-        'movement': short(c.get('movement'), 200),
-        'dbio': short(c.get('director_bio'), 400),
+        'context': text(c.get('cultural_context')),
+        'curatorial': text(c.get('curatorial')),
+        'sig': text(c.get('genre_significance')),
+        'era': text(c.get('era')),
+        'movement': text(c.get('movement')),
+        'dbio': text(c.get('director_bio')),
         'effects': arr(c.get('effects'), 6),
         'fashion': arr(c.get('fashion'), 6),
     }
