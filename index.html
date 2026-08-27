@@ -46,6 +46,20 @@
   </div>
 </div>
 
+<!-- The collection -->
+<div class="sheet" id="keptSheet" hidden>
+  <div class="sheet-card" role="dialog" aria-modal="true" aria-labelledby="keptTitle">
+    <button class="sheet-x" id="keptX" aria-label="Close">&times;</button>
+    <h2 id="keptTitle">Kept</h2>
+    <p class="sheet-lede" id="keptLede"></p>
+    <div class="kept-actions" id="keptActions" hidden>
+      <button class="sheet-go" id="playAllKept">Play all</button>
+      <button class="ghost" id="shuffleKept">Shuffle</button>
+    </div>
+    <div class="kept-list" id="keptList"></div>
+  </div>
+</div>
+
 <!-- Info, on first entry and from the nav afterwards -->
 <div class="sheet" id="sheet" hidden>
   <div class="sheet-card" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
@@ -86,7 +100,8 @@
 
     <h3>It remembers you, and only you</h3>
     <p>
-      Keep something and it stays, with the reason you kept it. The agent can read that back:
+      Keep something and it stays, with the reason you kept it. <b>Kept</b> in the top bar opens
+      the collection, and plays the lot as a run whenever you want it. The agent can read that back:
       not just the list, but its <em>shape</em>, the average motion, brightness, warmth and shot
       length of everything you have kept, and the eras and directors you lean toward. Ask what to
       watch and it answers from your own collection rather than from what is popular.
@@ -164,6 +179,7 @@
       <span><b id="cEdges">49,753</b> connections</span>
       <span><b>1966</b>–<b>2026</b></span>
     </div>
+    <button class="keptbtn" id="keptBtn" title="Everything you have kept">Kept<i id="keptBadge">0</i></button>
     <button class="radio" id="radio" aria-pressed="false" title="Let the agent keep choosing what plays next, and say why each time"><i></i><span>Keep it going</span></button>
     <button class="info" id="info" aria-label="About this project" title="About this project">i</button>
     <div class="tally" id="tally" data-state="off"><i></i><span id="tallyText">No agent</span></div>

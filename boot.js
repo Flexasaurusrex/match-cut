@@ -142,6 +142,29 @@ window.Demo = Demo;
     kept ? App.dropIt({ id: cur.id }) : App.keepIt({ id: cur.id });
     UI.markKept();
   };
+  // the collection as a page
+  document.getElementById('keptBtn').onclick = () => UI.openKept();
+  document.getElementById('keptX').onclick = () => UI.closeKept();
+  document.getElementById('keptSheet').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('keptSheet')) UI.closeKept();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !document.getElementById('keptSheet').hidden) UI.closeKept();
+  });
+  document.getElementById('playAllKept').onclick = () => {
+    const ids = App._state.keep.map(k => k.id).filter(id => App._state.byId.has(id));
+    if (!ids.length) return;
+    App.queueSet({ title: 'Kept', ids, note: 'Everything you have kept, in order.' });
+    UI.closeKept();
+  };
+  document.getElementById('shuffleKept').onclick = () => {
+    const ids = App._state.keep.map(k => k.id).filter(id => App._state.byId.has(id));
+    if (!ids.length) return;
+    for (let i = ids.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [ids[i], ids[j]] = [ids[j], ids[i]]; }
+    App.queueSet({ title: 'Kept, shuffled', ids, note: 'Everything you have kept, out of order.' });
+    UI.closeKept();
+  };
+
   document.getElementById('tShop').onclick = async () => {
     if (!App.nowPlaying().playing) return;
     const b = document.getElementById('tShop');

@@ -331,7 +331,50 @@ const UI = (() => {
       </a>`).join('');
   }
 
+  // The collection, as a place rather than a strip. Play all reuses the set
+  // machinery, so a run of your favourites gets the same running order.
+  function openKept() {
+    paintKeptSheet();
+    $('keptSheet').hidden = false;
+    $('keptX').focus();
+  }
+  function closeKept() { $('keptSheet').hidden = true; }
+
+  function paintKeptSheet() {
+    const keep = App._state.keep;
+    const cards = keep.map(k => ({ k, c: App._state.byId.get(k.id) })).filter(x => x.c);
+    $('keptLede').textContent = cards.length
+      ? `${cards.length} video${cards.length > 1 ? 's' : ''} you have kept. Play them as a run, or pick one.`
+      : 'Nothing kept yet. Press the heart while something is playing, or tell the agent you like it.';
+    $('keptActions').hidden = !cards.length;
+    $('keptList').innerHTML = cards.map(({ k, c }) => `
+      <div class="krow" data-id="${c.id}">
+        <img src="https://i.ytimg.com/vi/${c.id}/mqdefault.jpg" alt="" loading="lazy">
+        <span class="n">
+          <b>${esc(c.a)}</b>
+          <span>${esc(c.t)}${c.y ? ' \u00b7 ' + c.y : ''}</span>
+          ${k.why ? `<em>${esc(k.why)}</em>` : ''}
+        </span>
+        <span class="act">
+          <button data-act="play" title="Play this">&#9654;</button>
+          <button data-act="drop" title="Remove">&times;</button>
+        </span>
+      </div>`).join('');
+    $('keptList').onclick = (e) => {
+      const b = e.target.closest('button'); if (!b) return;
+      const id = b.closest('.krow').dataset.id;
+      if (b.dataset.act === 'play') { App.play({ id, note: 'From your collection.' }); closeKept(); }
+      else { App.dropIt({ id }); paintKeptSheet(); }
+    };
+  }
+
   function paintKeep(cards, meta) {
+    const btn = $('keptBtn');
+    if (btn) {
+      btn.querySelector('i').textContent = App._state.keep.length;
+      btn.dataset.any = App._state.keep.length ? '1' : '0';
+    }
+    if ($('keptSheet') && !$('keptSheet').hidden) paintKeptSheet();
     const bar = $('keepbar');
     if (!bar) return;
     if (!cards.length) { bar.hidden = true; return; }
@@ -382,7 +425,7 @@ const UI = (() => {
       : 'That video is blocked from embedding and nothing nearby is playable.';
   }
 
-  return { onCorpusReady, paint, paintDetail, paintEdges, paintQueue, paintSet, setPosition, paintCalls, agentStatus, playerError, modelStatus, transport, playState, deepReady, paintKeep, markKept, paintRecords, shopBusy };
+  return { onCorpusReady, paint, paintDetail, paintEdges, paintQueue, paintSet, setPosition, paintCalls, agentStatus, playerError, modelStatus, transport, playState, deepReady, paintKeep, markKept, paintRecords, shopBusy, openKept, closeKept };
 })();
 
 window.UI = UI;
