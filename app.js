@@ -238,13 +238,45 @@ const App = (() => {
 
   function jumpTo(id) {
     const i = S.queue.indexOf(id);
-    if (i >= 0) { play(S.queue[i] ? i : 0); return; }
+    if (i >= 0) { S.qi = i; play({ id: S.queue[i] }); announceNext(); return; }
     play({ id });
   }
-  function next() {
-    if (!S.queue.length) return;
-    S.qi = (S.qi + 1) % S.queue.length;
+  // Advance inside a set. Returns false at the end rather than wrapping, which
+  // is what made a six video set play the same six forever.
+  function advanceInSet() {
+    if (!S.queue.length || S.qi >= S.queue.length - 1) return false;
+    S.qi += 1;
     play({ id: S.queue[S.qi] });
+    announceNext();
+    return true;
+  }
+
+  function endOfSet() {
+    const title = S.setTitle || 'The set';
+    S.queue = []; S.qi = 0; S.setTitle = '';
+    UI.paintSet([], '', 0);
+    return title;
+  }
+
+  // The transport button. At the end of a set it leaves the set rather than
+  // looping, so pressing next always moves somewhere new.
+  function next() {
+    if (advanceInSet()) return;
+    if (S.queue.length) endOfSet();
+    const cur = S.current;
+    if (cur) {
+      const c = connections({ id: cur.id });
+      const live = (c.connections || []).filter(e => e.in_archive && !S.dead.has(e.id));
+      if (live.length) {
+        const e = live[Math.floor(Math.random() * Math.min(5, live.length))];
+        return play({ id: e.id, note: e.reason });
+      }
+      const near = findByLook({ like_id: cur.id, limit: 8 });
+      const pick = (near.results || []).find(r => !S.dead.has(r.id));
+      if (pick) return play({ id: pick.id, note: 'Nearest on look.' });
+    }
+    const any = search({ tier: 1, limit: 8 });
+    if (any.results && any.results.length) play({ id: any.results[0].id });
   }
   function stats() {
     const yrs = S.index.map(c => c.y).filter(Boolean);
@@ -268,7 +300,19 @@ const App = (() => {
       playerVars: { autoplay: 0, controls: 1, rel: 0, playsinline: 1, iv_load_policy: 3 },
       events: {
         onReady: () => { S.ready = true; },
-        onStateChange: (e) => { if (e.data === YT.PlayerState.ENDED) next(); },
+        onStateChange: (e) => {
+          if (e.data !== YT.PlayerState.ENDED) return;
+          if (advanceInSet()) return;                     // still inside a set
+          const finished = S.queue.length ? endOfSet() : null;
+          if (window.Radio && Radio.on) {
+            if (finished && window.Chat) Chat.note(`${finished} is finished. Carrying on.`);
+            Radio.ended();
+          } else if (finished && window.Chat) {
+            Chat.note(`${finished} is finished. Press Keep it going, or ask for something else.`);
+          } else {
+            next();
+          }
+        },
         onError: () => skipDead(),
       },
     });
@@ -309,7 +353,7 @@ const App = (() => {
     UI.paintCalls(S.calls);
   }
 
-  return { boot, bootPlayer, search, findByLook, connections, play, nowPlaying, skipDead, jumpTo,
+  return { boot, bootPlayer, search, findByLook, connections, play, nowPlaying, skipDead, jumpTo, advanceInSet, advanceInSet,
            annotation, queueSet, stats, next, logCall,
            setAgentStatus: (...a) => UI.agentStatus(...a),
            _state: S };
