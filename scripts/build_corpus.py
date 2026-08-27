@@ -46,6 +46,12 @@ for c in cards:
         'nt': c.get('narrative_type') or '',
         've': c.get('visual_era') or '',
         'tier': c.get('tier'),
+        # A single unbroken shot for a whole song is album art with audio over it,
+        # not a music video. 449 of these. They are never picked; see data/stills.json.
+        'still': 1 if ((num(c.get('cuts')) <= 1 and num(c.get('avg_shot_length')) >= 60
+                        and num(c.get('avg_motion')) < 12)
+                       or (num(c.get('avg_motion')) < 1.0
+                           and num(c.get('avg_shot_length')) >= 40)) else 0,
         'dc': c.get('director_confidence') or '',
         'vs': c.get('verification_score'),
         'dur': num(c.get('duration')),
@@ -95,6 +101,7 @@ core = {
     'y': [c['y'] for c in index],
     'tier': [c['tier'] for c in index],
     'dur': [c['dur'] for c in index],
+    'still': [c['still'] for c in index],
     'fp': [[c['fp'][k] for k in FP] for c in index],
     'dict': {'d': d_table, 'nt': nt_table, 've': ve_table, 'dc': dc_table},
     'di': d_idx, 'nti': nt_idx, 'vei': ve_idx, 'dci': dc_idx,

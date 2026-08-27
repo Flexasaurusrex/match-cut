@@ -32,6 +32,7 @@ const App = (() => {
         d: D.d[core.di[i]] || '', nt: D.nt[core.nti[i]] || '',
         ve: D.ve[core.vei[i]] || '', dc: D.dc[core.dci[i]] || '',
         tier: core.tier[i], dur: core.dur[i],
+        still: (core.still && core.still[i]) ? 1 : 0,
         fp: { motion: core.fp[i][0], bright: core.fp[i][1], warm: core.fp[i][2],
               sat: core.fp[i][3], contrast: core.fp[i][4], shotlen: core.fp[i][5],
               cuts: core.fp[i][6], scenes: core.fp[i][7] },
@@ -102,6 +103,7 @@ const App = (() => {
     const terms = q ? q.split(' ').filter(Boolean) : [];
     let out = [];
     for (const c of S.index) {
+      if (c.still) continue;   // album art with audio over it, never a pick
       if (a.director && !norm(c.d).includes(norm(a.director))) continue;
       if (a.narrative_type && c.nt !== a.narrative_type) continue;
       if (a.visual_era && c.ve !== a.visual_era) continue;
@@ -145,6 +147,7 @@ const App = (() => {
 
     let out = [];
     for (const c of S.index) {
+      if (c.still) continue;   // no motion to match on, so it can never look like anything
       if (seed && c.id === seed.id) continue;
       if (seed && a.exclude_same_era && c.ve === seed.ve) continue;
       let ok = true;
@@ -184,7 +187,8 @@ const App = (() => {
     if (!S.deep) return { from: { id: c.id, artist: c.a, title: c.t }, connections: [],
                           note: 'The connection graph is still loading. Ask again in a moment.' };
     const edges = (c.conns || []).map(k => {
-      const hit = S.byKey.get(key(k.a, k.v));
+      let hit = S.byKey.get(key(k.a, k.v));
+      if (hit && hit.still) hit = null;   // present in the archive, but nothing moves in it
       return { reason: k.r, kind: k.t, artist: k.a, title: k.v, id: hit ? hit.id : null, in_archive: !!hit };
     });
     return {
@@ -444,7 +448,7 @@ const App = (() => {
     const lim = clamp(a.limit || 8, 1, 30);
     const scored = [];
     for (const c of S.index) {
-      if (keptIds.has(c.id) || S.dead.has(c.id)) continue;
+      if (c.still || keptIds.has(c.id) || S.dead.has(c.id)) continue;
       let d = 0;
       for (const f in avg) {
         const hi = S.pct[f] ? (S.pct[f].p67 || 1) : 1;
