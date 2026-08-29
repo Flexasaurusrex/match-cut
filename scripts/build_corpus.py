@@ -39,6 +39,9 @@ for c in cards:
         conns.append({'a': k.get('a',''), 'v': k.get('v',''), 'r': k.get('r',''), 't': k.get('t','')})
     index.append({
         'id': cid,
+        # Playback target. Differs from id only where a static entry was replaced
+        # with the real video; id stays the archive key so detail shards resolve.
+        'vid': c.get('vid') or '',
         'a': c.get('artist',''),
         't': c.get('title',''),
         'y': c.get('year'),
@@ -102,6 +105,8 @@ core = {
     'tier': [c['tier'] for c in index],
     'dur': [c['dur'] for c in index],
     'still': [c['still'] for c in index],
+    # sparse: only the replaced entries carry a separate playback id
+    'vid': {str(i): c['vid'] for i, c in enumerate(index) if c['vid']},
     'fp': [[c['fp'][k] for k in FP] for c in index],
     'dict': {'d': d_table, 'nt': nt_table, 've': ve_table, 'dc': dc_table},
     'di': d_idx, 'nti': nt_idx, 'vei': ve_idx, 'dci': dc_idx,

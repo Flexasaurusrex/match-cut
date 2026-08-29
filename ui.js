@@ -349,7 +349,7 @@ const UI = (() => {
     $('keptActions').hidden = !cards.length;
     $('keptList').innerHTML = cards.map(({ k, c }) => `
       <div class="krow" data-id="${c.id}">
-        <img src="https://i.ytimg.com/vi/${c.id}/mqdefault.jpg" alt="" loading="lazy">
+        <img src="https://i.ytimg.com/vi/${c.vid || c.id}/mqdefault.jpg" alt="" loading="lazy">
         <span class="n">
           <b>${esc(c.a)}</b>
           <span>${esc(c.t)}${c.y ? ' \u00b7 ' + c.y : ''}</span>

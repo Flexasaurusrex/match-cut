@@ -33,6 +33,7 @@ const App = (() => {
         ve: D.ve[core.vei[i]] || '', dc: D.dc[core.dci[i]] || '',
         tier: core.tier[i], dur: core.dur[i],
         still: (core.still && core.still[i]) ? 1 : 0,
+        vid: (core.vid && core.vid[i]) || '',
         fp: { motion: core.fp[i][0], bright: core.fp[i][1], warm: core.fp[i][2],
               sat: core.fp[i][3], contrast: core.fp[i][4], shotlen: core.fp[i][5],
               cuts: core.fp[i][6], scenes: core.fp[i][7] },
@@ -224,7 +225,7 @@ const App = (() => {
     const token = ++S.seq;            // annotation fetches are async and can land late
     try { UI.paint(c, a.note || ''); }
     catch (e) { console.error('render failed', e); }
-    const go = () => S.yt && S.yt.loadVideoById({ videoId: c.id, startSeconds: 0 });
+    const go = () => S.yt && S.yt.loadVideoById({ videoId: c.vid || c.id, startSeconds: 0 });
     if (S.ready) go();
     else { let n = 0; const t = setInterval(() => { if (S.ready) { clearInterval(t); go(); } else if (++n > 60) clearInterval(t); }, 200); }
     if (S.queue.length) {
