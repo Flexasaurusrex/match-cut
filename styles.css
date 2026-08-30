@@ -123,6 +123,16 @@ a{color:inherit}
 
 .stage iframe,.stage #screen{position:absolute;inset:0;width:100%;height:100%;border:0}
 
+/* Sits over the player so the rights holder's error card is never the thing
+   a person is left looking at. */
+.dead{
+  position:absolute;inset:0;z-index:4;display:grid;place-content:center;gap:.5rem;
+  text-align:center;padding:2rem;background:var(--room);
+}
+.dead[hidden]{display:none !important}
+.deadwhat{font-family:var(--serif);font-size:clamp(1rem,2.2vw,1.5rem);color:var(--paper);margin:0}
+.deadhow{font-family:var(--mono);font-size:.75rem;letter-spacing:.04em;color:var(--tally);margin:0}
+
 .empty{
   position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
   justify-content:center;gap:22px;text-align:center;padding:30px;background:var(--panel-2);

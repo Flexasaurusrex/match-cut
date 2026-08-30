@@ -418,14 +418,27 @@ const UI = (() => {
     if (p) p.innerHTML = playing ? '&#10074;&#10074;' : '&#9654;';
   }
 
+  // Cards carry a/t, not artist/title. Reading the wrong field printed
+  // "undefined is blocked from embedding" on screen.
+  function named(c) { return c ? `${c.a} \u2013 ${c.t}` : 'That video'; }
+
   function playerError(blocked, next) {
     const n = $('mNote'); n.hidden = false;
     n.textContent = next
-      ? `${blocked ? blocked.artist + ' \u2013 ' + blocked.title : 'That video'} is blocked from embedding by the rights holder. Moving to the next match.`
-      : 'That video is blocked from embedding and nothing nearby is playable.';
+      ? `${named(blocked)} is blocked from embedding by the rights holder. Moving to the next match.`
+      : `${named(blocked)} is blocked from embedding and nothing nearby is playable.`;
   }
 
-  return { onCorpusReady, paint, paintDetail, paintEdges, paintQueue, paintSet, setPosition, paintCalls, agentStatus, playerError, modelStatus, transport, playState, deepReady, paintKeep, markKept, paintRecords, shopBusy, openKept, closeKept };
+  // Cover the player while we recover, so nobody sees YouTube's error card.
+  function deadScreen(show, blocked, how) {
+    const d = $('dead'); if (!d) return;
+    d.hidden = !show;
+    if (!show) return;
+    $('deadWhat').textContent = `${named(blocked)} is blocked from embedding by the rights holder.`;
+    $('deadHow').textContent = how || 'Finding another one';
+  }
+
+  return { onCorpusReady, paint, paintDetail, paintEdges, paintQueue, paintSet, setPosition, paintCalls, agentStatus, playerError, deadScreen, modelStatus, transport, playState, deepReady, paintKeep, markKept, paintRecords, shopBusy, openKept, closeKept };
 })();
 
 window.UI = UI;

@@ -9,7 +9,7 @@ const App = (() => {
     yt: null, ready: false, current: null,
     queue: [], qi: 0, setTitle: '',
     calls: [], pct: {}, seq: 0, extra: null, deep: false,
-    dead: new Set(), lastSkip: 0, pool: [],
+    dead: new Set(), lastSkip: 0, skips: 0, skipTimer: null, pool: [],
     hist: [], hi: -1, navigating: false,
     keep: [],          // what the person has told the agent they like
   };
@@ -213,6 +213,7 @@ const App = (() => {
       return { error: 'that video is blocked from embedding and no alternative was found' };
     }
     S.current = c;
+    if (window.UI && UI.deadScreen) UI.deadScreen(false);
     if (!S.navigating) {
       // Drop anything ahead of us, the way a browser does after you go back
       // and then somewhere new.
@@ -473,19 +474,26 @@ const App = (() => {
       events: {
         onReady: () => { S.ready = true; },
         onStateChange: (e) => {
-          if (e.data === YT.PlayerState.PLAYING) UI.playState(true);
+          if (e.data === YT.PlayerState.PLAYING) {
+            UI.playState(true);
+            UI.deadScreen(false);      // something is on screen again
+            S.skips = 0;               // the run of failures is over
+          }
           if (e.data === YT.PlayerState.PAUSED) UI.playState(false);
           if (e.data !== YT.PlayerState.ENDED) return;
           if (advanceInSet()) return;                     // still inside a set
           const finished = S.queue.length ? endOfSet() : null;
+          UI.playState(false);
           if (window.Radio && Radio.on) {
             if (finished && window.Chat) Chat.note(`${finished} is finished. Carrying on.`);
             Radio.ended();
           } else if (finished && window.Chat) {
             Chat.note(`${finished} is finished. Press Keep it going, or ask for something else.`);
-          } else {
-            next();
           }
+          // Continuous play is off and no set is running, so the screen stays put.
+          // next() is the transport button; wiring it in here made a finished video
+          // walk a connection and start playing on its own, which is exactly what
+          // 'Keep it going' is supposed to be the switch for.
         },
         onError: () => skipDead(),
       },
@@ -498,13 +506,34 @@ const App = (() => {
   function skipDead() {
     const cur = S.current;
     if (cur) S.dead.add(cur.id);
-    const now = Date.now();
-    if (now - S.lastSkip < 1200) return;
-    S.lastSkip = now;
-    const next = pickAlternative();
-    if (!next) { UI.playerError(cur, null); return; }
-    UI.playerError(cur, next);
-    play({ id: next.id, note: `${cur ? cur.artist : 'That one'} is blocked from embedding. Playing the next match instead.` });
+
+    // The old guard returned here on a fast second failure, which left the
+    // viewer parked on the rights holder's error card with nothing playing.
+    // Now the attempt is always made, just spaced out and bounded.
+    if (S.skipTimer) return;
+    S.skips = (S.skips || 0) + 1;
+
+    if (S.skips > 6) {
+      UI.deadScreen(true, cur, 'Six in a row were blocked. Ask for something else.');
+      UI.playerError(cur, null);
+      S.skips = 0;
+      return;
+    }
+
+    UI.deadScreen(true, cur, 'Finding another one');
+    const wait = Math.max(0, 900 - (Date.now() - S.lastSkip));
+    S.skipTimer = setTimeout(() => {
+      S.skipTimer = null;
+      S.lastSkip = Date.now();
+      const alt = pickAlternative();
+      if (!alt) {
+        UI.deadScreen(true, cur, 'Nothing nearby is playable. Ask for something else.');
+        UI.playerError(cur, null);
+        return;
+      }
+      UI.playerError(cur, alt);
+      play({ id: alt.id, note: `${cur ? cur.a : 'That one'} is blocked from embedding. Playing the next match instead.` });
+    }, wait);
   }
 
   function pickAlternative() {
