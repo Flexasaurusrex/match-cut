@@ -3,13 +3,17 @@
    ========================================================================== */
 
 const App = (() => {
+  // data/ is served with a long cache, so the URL has to change when the corpus
+  // does. Without this a browser kept serving a corpus from before the still
+  // gate and the replacement ids, and the page could not recover by reloading.
+  const CORPUS_V = '2026-08-30-1';
   const S = {
     index: [], byId: new Map(), byKey: new Map(),
     detail: new Map(), shards: new Map(),
     yt: null, ready: false, current: null,
     queue: [], qi: 0, setTitle: '',
     calls: [], pct: {}, seq: 0, extra: null, deep: false,
-    dead: new Set(), lastSkip: 0, skips: 0, skipTimer: null, pool: [],
+    dead: new Set(), lastSkip: 0, skips: 0, skipTimer: null, retried: null, pool: [],
     hist: [], hi: -1, navigating: false,
     keep: [],          // what the person has told the agent they like
   };
@@ -24,7 +28,7 @@ const App = (() => {
     // then stream the heavy fields in behind it. 339K to interactive instead
     // of 2.6MB.
     const t0 = performance.now();
-    const core = await fetch('data/core.json').then(r => r.json());
+    const core = await fetch(`data/core.json?v=${CORPUS_V}`).then(r => r.json());
     const D = core.dict;
     for (let i = 0; i < core.n; i++) {
       const c = {
@@ -50,7 +54,7 @@ const App = (() => {
     UI.onCorpusReady(S.index.length, Math.round(performance.now() - t0));
 
     // The rest arrives behind the first paint.
-    S.extra = fetch('data/extra.json').then(r => r.json()).then(x => {
+    S.extra = fetch(`data/extra.json?v=${CORPUS_V}`).then(r => r.json()).then(x => {
       for (let i = 0; i < S.index.length; i++) {
         const c = S.index[i];
         c.tags = x.tags[i] || []; c.tech = x.tech[i] || [];
@@ -79,7 +83,7 @@ const App = (() => {
   async function detailFor(id) {
     if (S.detail.has(id)) return S.detail.get(id);
     const b = String(shardOf(id)).padStart(3, '0');
-    if (!S.shards.has(b)) S.shards.set(b, fetch(`data/detail/${b}.json`).then(r => r.json()));
+    if (!S.shards.has(b)) S.shards.set(b, fetch(`data/detail/${b}.json?v=${CORPUS_V}`).then(r => r.json()));
     const obj = await S.shards.get(b);
     for (const k in obj) if (!S.detail.has(k)) S.detail.set(k, obj[k]);
     return S.detail.get(id) || null;
@@ -207,11 +211,13 @@ const App = (() => {
   function play(a = {}) {
     const c = S.byId.get(a.id);
     if (!c) return { error: `unknown id ${a.id}` };
-    if (S.dead.has(c.id)) {
+    if (S.dead.has(c.id) && !a.force) {
       const alt = pickAlternative();
       if (alt) return play({ id: alt.id, note: a.note || '' });
       return { error: 'that video is blocked from embedding and no alternative was found' };
     }
+    // Asked for by name, so give it a real attempt and drop the suspicion.
+    if (a.force) S.dead.delete(c.id);
     S.current = c;
     if (window.UI && UI.deadScreen) UI.deadScreen(false);
     if (!S.navigating) {
@@ -495,7 +501,36 @@ const App = (() => {
           // walk a connection and start playing on its own, which is exactly what
           // 'Keep it going' is supposed to be the switch for.
         },
-        onError: () => skipDead(),
+        onError: (e) => {
+          // Not every player error means the rights holder blocked the embed.
+          // 101 and 150 do. 100 is gone or private. 2 and 5 are a bad parameter
+          // and an HTML5 hiccup, both transient, and treating those as blocked
+          // was permanently poisoning videos that play perfectly well.
+          const code = e && e.data;
+          const blocked = code === 101 || code === 150 || code === 100;
+
+          // The error can also land after we have already moved on, because
+          // S.current is set the instant play() is called rather than when the
+          // frame loads. Blaming S.current meant a good video inherited the
+          // previous one's failure and could never be played again.
+          let failed = null;
+          try { failed = S.yt && S.yt.getVideoData && S.yt.getVideoData().video_id; }
+          catch (_) {}
+          const cur = S.current;
+          const holding = cur ? (cur.vid || cur.id) : null;
+          if (failed && holding && failed !== holding) return;   // stale, not ours
+
+          if (!blocked) {
+            // Give it one honest retry before writing anything off.
+            if (S.retried === (cur && cur.id)) { S.retried = null; return; }
+            S.retried = cur && cur.id;
+            setTimeout(() => { if (S.current === cur && S.yt) {
+              S.yt.loadVideoById({ videoId: holding, startSeconds: 0 });
+            } }, 600);
+            return;
+          }
+          skipDead();
+        },
       },
     });
   }
