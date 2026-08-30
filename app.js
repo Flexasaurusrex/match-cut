@@ -513,8 +513,8 @@ const App = (() => {
     if (S.skipTimer) return;
     S.skips = (S.skips || 0) + 1;
 
-    if (S.skips > 6) {
-      UI.deadScreen(true, cur, 'Six in a row were blocked. Ask for something else.');
+    if (S.skips > 12) {
+      UI.deadScreen(true, cur, 'Too many blocked in a row. Ask for something else.');
       UI.playerError(cur, null);
       S.skips = 0;
       return;
@@ -544,9 +544,21 @@ const App = (() => {
     }
     const cur = S.current;
     if (cur) {
-      const near = findByLook({ like_id: cur.id, limit: 8 });
+      const near = findByLook({ like_id: cur.id, limit: 40 });
       for (const r of (near.results || [])) if (!S.dead.has(r.id)) return S.byId.get(r.id);
     }
+    // Floor. Embed blocking is a property of the rights holder, so the videos
+    // that look most like a blocked one are often from the same label and
+    // blocked too. Looking only at close neighbours kept picking from inside
+    // the same dead cluster until it ran out. Leave the neighbourhood: with
+    // thousands playable, running out should be impossible.
+    const live = [];
+    for (const c of S.index) {
+      if (c.still || S.dead.has(c.id)) continue;
+      if (cur && c.a === cur.a) continue;        // same artist, likely same blocker
+      live.push(c);
+    }
+    if (live.length) return live[(Math.random() * live.length) | 0];
     return null;
   }
 
